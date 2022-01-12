@@ -3,10 +3,9 @@ WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["TgNews/TgNews.csproj", "TgNews/"]
 RUN dotnet restore "TgNews/TgNews.sln"
 COPY . .
-WORKDIR "/src/TgForwarder"
+WORKDIR "/src/TgNews"
 RUN dotnet build "TgNews.sln" -c Release -o /app/build
 
 FROM build AS publish
