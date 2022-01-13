@@ -1,0 +1,24 @@
+version: "2"
+
+services:
+  tgNews:
+    image: ghcr.io/roganik/tgnews:latest
+    container_name: "tgnews"
+    hostname: "tgnews"
+    # restart: always
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+    environment:
+      - TGNEWS_telegram_app_id=01234
+      - TGNEWS_telegram_api_hash=0a2b3c4d
+      - TGNEWS_telegram_phone_number=+70123456789
+      - TGNEWS_telegram_bot_token=01234:abcd
+    volumes:
+      - ./tgNews.litedb:/app/tgNews.litedb
+      - ./tgNews.tg.session:/app/tgNews.tg.session
+      - ./tgNews.tgBot.session:/app/tgNews.tgBot.session
