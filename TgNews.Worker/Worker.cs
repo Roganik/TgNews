@@ -6,13 +6,16 @@ public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
     private Forwarder? _forwarder;
-    private int _sleepSeconds = 300;
-    private readonly TgNewsConfiguration _cfg;
+    private readonly int _sleepSeconds;
+    private readonly TgNewsConfiguration _tgCfg;
+    private readonly WorkerConfiguration _workerCfg;
 
     public Worker(ILogger<Worker> logger, IConfiguration icfg)
     {
-        _cfg = new TgNewsConfiguration(icfg);
+        _tgCfg = new TgNewsConfiguration(icfg);
+        _workerCfg = new WorkerConfiguration(icfg);
         _logger = logger;
+        _sleepSeconds = _workerCfg.ForwarderCooldownSeconds;
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -21,9 +24,9 @@ public class Worker : BackgroundService
         
         WTelegram.Helpers.Log = (lvl, str) => _logger.Log((LogLevel)lvl, str);
         
-        var db = new TgNews.BL.Client.DbStorage(_cfg);
-        var tg = new TgNews.BL.Client.Telegram(_cfg);
-        var tgBot = new TgNews.BL.Client.TelegramBot(_cfg);
+        var db = new TgNews.BL.Client.DbStorage(_tgCfg);
+        var tg = new TgNews.BL.Client.Telegram(_tgCfg);
+        var tgBot = new TgNews.BL.Client.TelegramBot(_tgCfg);
 
         await tg.Init();
         await tgBot.Init();
