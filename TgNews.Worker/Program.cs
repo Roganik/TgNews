@@ -40,7 +40,8 @@ await tg.Init();
 await tgBot.Init();
 
 var forwarder = new ForwardInterestingPostsCommand(tg, tgBot, db, cfg);
-await forwarder.Execute();
+var subscriptions = new TgSubscriptionsProvider();
+await forwarder.Execute(subscriptions.GetAll());
 
 Console.WriteLine("Press any key to quit");
 

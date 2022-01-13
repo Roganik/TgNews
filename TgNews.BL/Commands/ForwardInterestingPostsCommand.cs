@@ -9,7 +9,6 @@ public class ForwardInterestingPostsCommand
     private readonly TelegramBot _telegramBot;
     private readonly DbStorage _db;
     private readonly TgNewsConfiguration _cfg;
-    private readonly List<ITgSubscription> _subscriptions;
 
     public ForwardInterestingPostsCommand(Telegram telegram, TelegramBot telegramBot, DbStorage db, TgNewsConfiguration cfg)
     {
@@ -17,17 +16,11 @@ public class ForwardInterestingPostsCommand
         _telegramBot = telegramBot;
         _db = db;
         _cfg = cfg;
-
-        _subscriptions = new List<ITgSubscription>
-        {
-            new Bitkogan(),
-            new GPBInvestments(),
-        };
     }
 
-    public async Task Execute()
+    public async Task Execute(List<ITgSubscription> subscriptions)
     {
-        foreach (var subscription in _subscriptions)
+        foreach (var subscription in subscriptions)
         {
             var lastMsgId = _db.ReadKey<int>(subscription.ChannelName);
             var isFirstRun = lastMsgId == 0;

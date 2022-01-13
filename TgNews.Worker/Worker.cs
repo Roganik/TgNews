@@ -10,6 +10,7 @@ public class Worker : BackgroundService
     private readonly int _sleepSeconds;
     private readonly TgNewsConfiguration _tgCfg;
     private readonly WorkerConfiguration _workerCfg;
+    private readonly TgSubscriptionsProvider _subscriptionsProvider;
 
     public Worker(ILogger<Worker> logger, IConfiguration icfg)
     {
@@ -17,6 +18,7 @@ public class Worker : BackgroundService
         _workerCfg = new WorkerConfiguration(icfg);
         _logger = logger;
         _sleepSeconds = _workerCfg.ForwarderCooldownSeconds;
+        _subscriptionsProvider = new TgSubscriptionsProvider();
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -42,7 +44,7 @@ public class Worker : BackgroundService
         while (!stoppingToken.IsCancellationRequested)
         {
             _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-            await _forwarder.Execute();
+            await _forwarder.Execute(_subscriptionsProvider.GetAll());
             await Task.Delay(_sleepSeconds * 1000, stoppingToken);
         }
     }
