@@ -1,21 +1,23 @@
 using TgNews.BL.Client;
 using TgNews.BL.Subscriptions;
 
-namespace TgNews.BL;
+namespace TgNews.BL.Commands;
 
-public class Forwarder
+public class ForwardInterestingPostsCommand
 {
     private readonly Telegram _telegram;
     private readonly TelegramBot _telegramBot;
     private readonly DbStorage _db;
+    private readonly TgNewsConfiguration _cfg;
     private readonly List<ITgSubscription> _subscriptions;
 
-    public Forwarder(Telegram telegram, TelegramBot telegramBot, DbStorage db)
+    public ForwardInterestingPostsCommand(Telegram telegram, TelegramBot telegramBot, DbStorage db, TgNewsConfiguration cfg)
     {
         _telegram = telegram;
         _telegramBot = telegramBot;
         _db = db;
-        
+        _cfg = cfg;
+
         _subscriptions = new List<ITgSubscription>
         {
             new Bitkogan(),
@@ -59,7 +61,7 @@ public class Forwarder
                 interestingMessagesIds = interestingMessagesIds.TakeLast(2).ToArray();
             }
 
-            await _telegramBot.ForwardMessages(interestingMessagesIds, subscription.ChannelName);
+            await _telegramBot.ForwardMessages(interestingMessagesIds, subscription.ChannelName, _cfg.TgBotForwardToChannel);
             _db.SetKey(subscription.ChannelName, lastMsgId);
         }
     }

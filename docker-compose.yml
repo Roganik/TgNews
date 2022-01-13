@@ -20,6 +20,7 @@ services:
       - TGNEWS_telegram_bot_token=01234:abcd
       - TGNEWS_telegram_client_auto_retry_flood_seconds_threshold=60
       - TGNEWS_app_job_forwarder_cooldown_seconds=750
+      - TGNEWS_telegram_bot_forward_to_channel=channel_Id
     volumes:
       - ./tgNews.litedb:/app/tgNews.litedb
       - ./tgNews.tg.session:/app/tgNews.tg.session

@@ -16,7 +16,7 @@ public class TelegramBot : IDisposable
         return _telegramBot.LoginBotIfNeeded();
     }
     
-    public async Task ForwardMessages(int[] msgIds, string fromChat, string toChat = "roganik_wunsh")
+    public async Task ForwardMessages(int[] msgIds, string fromChat, string toChat)
     {
         var fromChatPeer = await _telegramBot.Contacts_ResolveUsername(fromChat);
         var toChatPeer = await _telegramBot.Contacts_ResolveUsername(toChat);

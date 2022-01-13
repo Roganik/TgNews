@@ -1,11 +1,12 @@
 using TgNews.BL;
+using TgNews.BL.Commands;
 
 namespace TgNews.Worker;
 
 public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
-    private Forwarder? _forwarder;
+    private ForwardInterestingPostsCommand? _forwarder;
     private readonly int _sleepSeconds;
     private readonly TgNewsConfiguration _tgCfg;
     private readonly WorkerConfiguration _workerCfg;
@@ -31,7 +32,7 @@ public class Worker : BackgroundService
         await tg.Init();
         await tgBot.Init();
 
-        _forwarder = new Forwarder(tg, tgBot, db);
+        _forwarder = new ForwardInterestingPostsCommand(tg, tgBot, db, _tgCfg);
 
         await base.StartAsync(cancellationToken);
     }

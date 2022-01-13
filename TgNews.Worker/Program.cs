@@ -1,5 +1,6 @@
 using System.Reflection;
 using TgNews.BL;
+using TgNews.BL.Commands;
 using TgNews.Worker;
 
 IHost host;
@@ -38,7 +39,7 @@ var tgBot = new TgNews.BL.Client.TelegramBot(cfg);
 await tg.Init();
 await tgBot.Init();
 
-var forwarder = new Forwarder(tg, tgBot, db);
+var forwarder = new ForwardInterestingPostsCommand(tg, tgBot, db, cfg);
 await forwarder.Execute();
 
 Console.WriteLine("Press any key to quit");
