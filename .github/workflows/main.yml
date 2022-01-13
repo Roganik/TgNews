@@ -12,8 +12,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Build and push Docker images
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      -
+        name: Build and push Docker images
         uses: docker/build-push-action@v2.7.0
         with:
           push: true
           file: TgNews.Worker/Dockerfile
+          tags: ghcr.io/roganik/tgnews:latest
