@@ -6,7 +6,7 @@ public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
     private Forwarder? _forwarder;
-    private int _sleepSeconds = 1000 * 60;
+    private int _sleepSeconds = 300;
     private readonly TgNewsConfiguration _cfg;
 
     public Worker(ILogger<Worker> logger, IConfiguration icfg)
@@ -22,11 +22,11 @@ public class Worker : BackgroundService
         WTelegram.Helpers.Log = (lvl, str) => _logger.Log((LogLevel)lvl, str);
         
         var db = new TgNews.BL.Client.DbStorage(_cfg);
-        var tg = new TgNews.BL.Client.Telegram();
-        var tgBot = new TgNews.BL.Client.TelegramBot();
+        var tg = new TgNews.BL.Client.Telegram(_cfg);
+        var tgBot = new TgNews.BL.Client.TelegramBot(_cfg);
 
-        await tg.Init(_cfg);
-        await tgBot.Init(_cfg);
+        await tg.Init();
+        await tgBot.Init();
 
         _forwarder = new Forwarder(tg, tgBot, db);
 
@@ -39,7 +39,7 @@ public class Worker : BackgroundService
         {
             _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
             await _forwarder.Execute();
-            await Task.Delay(_sleepSeconds, stoppingToken);
+            await Task.Delay(_sleepSeconds * 1000, stoppingToken);
         }
     }
 }

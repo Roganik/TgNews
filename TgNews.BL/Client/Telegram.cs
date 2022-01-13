@@ -4,16 +4,20 @@ namespace TgNews.BL.Client;
 
 public class Telegram : IDisposable
 {
-    private WTelegram.Client? _telegram;
+    private readonly WTelegram.Client _telegram;
 
-    public Telegram()
-    {
-        
-    }
-
-    public Task Init(TgNewsConfiguration cfg)
+    public Telegram(TgNewsConfiguration cfg)
     {
         _telegram = new WTelegram.Client(cfg.TgConfig);
+
+        if (!string.IsNullOrEmpty(cfg.TgClientFloodAutoRetrySecondsThreshold) && int.TryParse(cfg.TgClientFloodAutoRetrySecondsThreshold, out var seconds))
+        {
+            _telegram.FloodRetryThreshold = seconds;
+        }
+    }
+
+    public Task Init()
+    {
         return _telegram.LoginUserIfNeeded();
     }
 

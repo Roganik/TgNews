@@ -28,15 +28,15 @@ if (args.Any(arg => arg.ToLower() == "--server"))
 
 // section for local cmd-like development
 host = hostBuilder.Build();
-var cfg = host.Services.GetService<IConfiguration>();
-var tgCfg = new TgNewsConfiguration(cfg);
+var iCfg = host.Services.GetService<IConfiguration>();
+var cfg = new TgNewsConfiguration(iCfg);
 
-var db = new TgNews.BL.Client.DbStorage(tgCfg);
-var tg = new TgNews.BL.Client.Telegram();
-var tgBot = new TgNews.BL.Client.TelegramBot();
+var db = new TgNews.BL.Client.DbStorage(cfg);
+var tg = new TgNews.BL.Client.Telegram(cfg);
+var tgBot = new TgNews.BL.Client.TelegramBot(cfg);
 
-await tg.Init(tgCfg);
-await tgBot.Init(tgCfg);
+await tg.Init();
+await tgBot.Init();
 
 var forwarder = new Forwarder(tg, tgBot, db);
 await forwarder.Execute();

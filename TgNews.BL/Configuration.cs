@@ -10,6 +10,7 @@ public class TgNewsConfiguration
     public string TgApiHash => _cfg["telegram_api_hash"];
     public string TgPhoneNumber => _cfg["telegram_phone_number"];
     public string TgBotToken => _cfg["telegram_bot_token"];
+    public string TgClientFloodAutoRetrySecondsThreshold => _cfg["telegram_client_auto_retry_flood_seconds_threshold"];
     
     public string DbFile => GetFilePath("tgNews.litedb");
     public string TgSessionFile => GetFilePath("tgNews.tg.session");

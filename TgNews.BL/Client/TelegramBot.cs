@@ -4,16 +4,15 @@ namespace TgNews.BL.Client;
 
 public class TelegramBot : IDisposable
 {
-    private WTelegram.Client? _telegramBot;
+    private readonly WTelegram.Client _telegramBot;
 
-    public TelegramBot()
-    {
-        
-    }
-
-    public Task Init(TgNewsConfiguration cfg)
+    public TelegramBot(TgNewsConfiguration cfg)
     {
         _telegramBot = new WTelegram.Client(cfg.TgBotConfig);
+    }
+
+    public Task Init()
+    {
         return _telegramBot.LoginBotIfNeeded();
     }
     
