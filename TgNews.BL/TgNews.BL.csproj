@@ -9,7 +9,12 @@
     <ItemGroup>
       <PackageReference Include="LiteDB" Version="5.0.11" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
       <PackageReference Include="WTelegramClient" Version="1.9.1" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\TgNews.WTelegramClient.TypedEventsSourceGenerator\TgNews.WTelegramClient.TypedEventsSourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
 </Project>

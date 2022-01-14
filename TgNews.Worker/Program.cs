@@ -75,7 +75,13 @@ var eventHandler = (IObject arg) =>
     }
 };
 
-await tg.Init(eventHandler);
+var typedUpdates = new WTelegram.TypedUpdates();
+typedUpdates.OnUpdateEditChannelMessage = (m) =>
+{
+    m.
+};
+
+await tg.Init(typedUpdates);
 await tgBot.Init();
 
 Console.WriteLine("Press any key to quit");

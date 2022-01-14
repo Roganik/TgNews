@@ -1,4 +1,5 @@
 using TL;
+using WTelegram;
 
 namespace TgNews.BL.Client;
 
@@ -16,11 +17,11 @@ public class Telegram : IDisposable
         }
     }
 
-    public Task Init(Action<IObject> tgEventsSubscription = null)
+    public Task Init(TypedUpdates tgEventsSubscription = null)
     {
         if (tgEventsSubscription != null)
         {
-            _telegram.Update += tgEventsSubscription;
+            _telegram.Update += tgEventsSubscription.Subscription;
         }
         return _telegram.LoginUserIfNeeded();
     }

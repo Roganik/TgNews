@@ -10,6 +10,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CI", "CI", "{55D9B081-0026-
 		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TgNews.WTelegramClient.TypedEventsSourceGenerator", "TgNews.WTelegramClient.TypedEventsSourceGenerator\TgNews.WTelegramClient.TypedEventsSourceGenerator.csproj", "{759CC906-2895-433C-872C-270FDB28780A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{7011B769-9EDF-4BCD-B1D6-B118690B1BE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7011B769-9EDF-4BCD-B1D6-B118690B1BE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7011B769-9EDF-4BCD-B1D6-B118690B1BE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{759CC906-2895-433C-872C-270FDB28780A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{759CC906-2895-433C-872C-270FDB28780A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{759CC906-2895-433C-872C-270FDB28780A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{759CC906-2895-433C-872C-270FDB28780A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
