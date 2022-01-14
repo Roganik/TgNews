@@ -16,12 +16,12 @@ public class DbStorage
 
     public class KeyValue<T>
     {
-        public ObjectId Id { get; set; }
-        public string Key { get; set; }
-        public T Value { get; set; }
+        public ObjectId? Id { get; set; }
+        public string? Key { get; set; }
+        public T? Value { get; set; }
     }
     
-    public T ReadKey<T>(string key)
+    public T? ReadKey<T>(string key)
     {
         using var db = new LiteDatabase(_dbFile);
         var col = db.GetCollection<KeyValue<T>>(_keyValueCollection);

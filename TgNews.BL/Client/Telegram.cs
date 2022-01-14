@@ -39,7 +39,7 @@ public class Telegram : IDisposable
                 .Where(m => m != null)
                 .ToList();
             
-            return (messages, resolved);
+            return (messages, resolved)!;
         }
 
         throw new InvalidCastException("Only channel messages getting is implemented");

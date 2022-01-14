@@ -27,7 +27,7 @@ public class TgNewsConfiguration
     protected string GetFilePath(string filename) => Path.Combine(FileDir, filename);
     
     
-    public string TgConfig(string what)
+    public string? TgConfig(string what)
     {
         switch (what)
         {
@@ -35,17 +35,17 @@ public class TgNewsConfiguration
             case "api_id": return TgAppId;
             case "api_hash": return TgApiHash;
             case "phone_number": return TgPhoneNumber;
-            default: return null;                  // let WTelegramClient decide the default config
+            default: return null; // let WTelegramClient decide the default config
         }
     }
     
-    public string TgBotConfig(string what)
+    public string? TgBotConfig(string what)
     {
         switch (what)
         {
             case "session_pathname": return TgBotSessionFile;
             case "bot_token": return TgBotToken;
-            default: return TgConfig(what);                  // let WTelegramClient decide the default config
+            default: return TgConfig(what);
         }
     }
 }
