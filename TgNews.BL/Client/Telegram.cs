@@ -5,10 +5,13 @@ namespace TgNews.BL.Client;
 public class Telegram : IDisposable
 {
     private readonly WTelegram.Client _telegram;
+    public TelegramEvents Events { get; }
 
     public Telegram(TgNewsConfiguration cfg)
     {
         _telegram = new WTelegram.Client(cfg.TgConfig);
+        this.Events = new TelegramEvents();
+        _telegram.Update += Events.Subscription;
 
         if (!string.IsNullOrEmpty(cfg.TgClientFloodAutoRetrySecondsThreshold) && int.TryParse(cfg.TgClientFloodAutoRetrySecondsThreshold, out var seconds))
         {
@@ -16,12 +19,8 @@ public class Telegram : IDisposable
         }
     }
 
-    public Task Init(Action<IObject> tgEventsSubscription = null)
+    public Task Init()
     {
-        if (tgEventsSubscription != null)
-        {
-            _telegram.Update += tgEventsSubscription;
-        }
         return _telegram.LoginUserIfNeeded();
     }
 

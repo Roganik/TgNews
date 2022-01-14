@@ -38,44 +38,22 @@ var db = new TgNews.BL.Client.DbStorage(cfg);
 var tg = new TgNews.BL.Client.Telegram(cfg);
 var tgBot = new TgNews.BL.Client.TelegramBot(cfg);
 
-var eventHandler = (IObject arg) =>
+tg.Events.OnUpdate = (update) =>
 {
-    if (arg is not UpdatesBase updates)
-    {
-        logger.LogWarning("Unknown event type, skipping");
-        logger.LogWarning(arg.GetType().ToString());
-        return;
-    }
-
-    var updatedChats = string.Join(";", updates.Chats.Select(c => c.Value.Title));
-    if (!string.IsNullOrEmpty(updatedChats))
-    {
-        logger.LogCritical("UpdatedChats:  " + updatedChats);
-    }
-
-    foreach (var update in updates.UpdateList)
-    {
-        var logEvent = () =>
-        {
-            var type = update.GetType();
-            var json = JsonConvert.SerializeObject(update, type,
-                new JsonSerializerSettings() {Formatting = Formatting.Indented});
-            ;
-            logger.LogWarning(type.Name);
-            logger.LogInformation(json);
-        };
-        switch (update)
-        {
-            case UpdateUserStatus: break;
-            case UpdateMessagePoll: break;
-            default:
-                logEvent();
-                break;
-        }
-    }
+    var type = update.GetType();
+    var serializerOpts = new JsonSerializerSettings() {Formatting = Formatting.Indented};
+    var json = JsonConvert.SerializeObject(update, type, serializerOpts);
+    logger.LogWarning($"Untyped update received: {type.Name}");
+    logger.LogInformation(json);
 };
 
-await tg.Init(eventHandler);
+tg.Events.OnUpdateEditChannelMessage = (update, msg) =>
+{
+    // todo
+};
+
+
+await tg.Init();
 await tgBot.Init();
 
 Console.WriteLine("Press any key to quit");
