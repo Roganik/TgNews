@@ -1,7 +1,8 @@
 using System.Reflection;
+using Newtonsoft.Json;
 using TgNews.BL;
-using TgNews.BL.Commands;
 using TgNews.Worker;
+using TL;
 
 IHost host;
 var hostBuilder = Host.CreateDefaultBuilder(args)
@@ -27,22 +28,58 @@ if (args.Any(arg => arg.ToLower() == "--server"))
     return;
 }
 
-// section for local cmd-like development
+// section for local experiments for cmd-like app
 host = hostBuilder.Build();
 var iCfg = host.Services.GetService<IConfiguration>();
 var cfg = new TgNewsConfiguration(iCfg);
+var logger = host.Services.GetService<ILogger<Program>>();
 
 var db = new TgNews.BL.Client.DbStorage(cfg);
 var tg = new TgNews.BL.Client.Telegram(cfg);
 var tgBot = new TgNews.BL.Client.TelegramBot(cfg);
 
-await tg.Init();
+var eventHandler = (IObject arg) =>
+{
+    if (arg is not UpdatesBase updates)
+    {
+        logger.LogWarning("Unknown event type, skipping");
+        logger.LogWarning(arg.GetType().ToString());
+        return;
+    }
+
+    var updatedChats = string.Join(";", updates.Chats.Select(c => c.Value.Title));
+    if (!string.IsNullOrEmpty(updatedChats))
+    {
+        logger.LogCritical("UpdatedChats:  " + updatedChats);
+    }
+
+    foreach (var update in updates.UpdateList)
+    {
+        var logEvent = () =>
+        {
+            var type = update.GetType();
+            var json = JsonConvert.SerializeObject(update, type,
+                new JsonSerializerSettings() {Formatting = Formatting.Indented});
+            ;
+            logger.LogWarning(type.Name);
+            logger.LogInformation(json);
+        };
+        switch (update)
+        {
+            case UpdateUserStatus: break;
+            case UpdateMessagePoll: break;
+            default:
+                logEvent();
+                break;
+        }
+    }
+};
+
+await tg.Init(eventHandler);
 await tgBot.Init();
 
-var forwarder = new ForwardInterestingPostsCommand(tg, tgBot, db, cfg);
-var subscriptions = new TgSubscriptionsProvider();
-await forwarder.Execute(subscriptions.GetAll());
-
 Console.WriteLine("Press any key to quit");
+Console.ReadKey();
+Console.ReadKey();
 
 

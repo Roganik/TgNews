@@ -15,6 +15,8 @@ public class Bitkogan : ITgSubscription
             "#видео",
             "#реклама",
             "Новое видео в YouTube",
+            "#партнерскийпост",
+            
         };
 
         if (stopWords.Any(word => text.Contains(word)))

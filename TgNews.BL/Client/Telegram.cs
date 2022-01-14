@@ -16,8 +16,12 @@ public class Telegram : IDisposable
         }
     }
 
-    public Task Init()
+    public Task Init(Action<IObject> tgEventsSubscription = null)
     {
+        if (tgEventsSubscription != null)
+        {
+            _telegram.Update += tgEventsSubscription;
+        }
         return _telegram.LoginUserIfNeeded();
     }
 
@@ -56,6 +60,6 @@ public class Telegram : IDisposable
 
     public void Dispose()
     {
-        _telegram?.Dispose();
+        _telegram.Dispose();
     }
 }
