@@ -80,7 +80,7 @@ public class ForwardInterestingPostsFromEventsCommand
             })
             .ToList();
         
-        _logger.LogInformation($"Got {newMessages.Count,3} new messages from {peers.Count,2} peers to analyze");
+        _logger.LogInformation($"Got {newMessages.Count,2} new messages from {peers.Count,2} peers to analyze");
         
         foreach (var peer in peers)
         {
@@ -93,16 +93,25 @@ public class ForwardInterestingPostsFromEventsCommand
             var subscription = peer.Subscription;
             var lastProcessedMsg = _lastProcessedMsgIdService.Get(subscription);
             var messagesToAnalyze = newMessages.Where(p => p.PeerId == peer.PeerId && p.Msg.id > lastProcessedMsg).ToList();
-            var interestingMessages = messagesToAnalyze.Where(m => subscription.IsMessageInteresting(m.Msg)).ToList();
-            
+            if (messagesToAnalyze.Count == 0)
+            {
+                continue;
+            }
+
             var maxMsgId = messagesToAnalyze.Select(m => m.Msg.id).Max();
             await _tg.MarkChannelAsRead(subscription.ChannelName, maxMsgId);
+            _lastProcessedMsgIdService.Save(subscription, maxMsgId);
 
+            var interestingMessages = messagesToAnalyze.Where(m => subscription.IsMessageInteresting(m.Msg)).ToList();
+            if (interestingMessages.Count == 0)
+            {
+                continue;
+            }
+            
             var msgIdToForward = interestingMessages.Select(m => m.Msg.id).ToArray();
             await _bot.ForwardMessages(msgIdToForward, subscription.ChannelName, _cfg.TgBotForwardToChannel);
             
-            _lastProcessedMsgIdService.Save(subscription, maxMsgId);
-            _logger.LogInformation($"Forwarded {interestingMessages.Count,3} interesting messages from {subscription.ChannelName}");
+            _logger.LogInformation($"Forwarded {interestingMessages.Count,2} interesting messages from {subscription.ChannelName}");
         }
     }
     
