@@ -38,7 +38,7 @@ var db = new TgNews.BL.Client.DbStorage(cfg);
 var tg = new TgNews.BL.Client.Telegram(cfg);
 var tgBot = new TgNews.BL.Client.TelegramBot(cfg);
 
-tg.Events.OnUpdate = (update) =>
+tg.Events.OnUpdate += (update) =>
 {
     var type = update.GetType();
     var serializerOpts = new JsonSerializerSettings() {Formatting = Formatting.Indented};
@@ -46,12 +46,6 @@ tg.Events.OnUpdate = (update) =>
     logger.LogWarning($"Untyped update received: {type.Name}");
     logger.LogInformation(json);
 };
-
-tg.Events.OnUpdateEditChannelMessage = (update, msg) =>
-{
-    // todo
-};
-
 
 await tg.Init();
 await tgBot.Init();

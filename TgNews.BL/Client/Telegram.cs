@@ -6,12 +6,15 @@ public class Telegram : IDisposable
 {
     private readonly WTelegram.Client _telegram;
     public TelegramEvents Events { get; }
+    public TelegramCache Cache { get; }
 
     public Telegram(TgNewsConfiguration cfg)
     {
         _telegram = new WTelegram.Client(cfg.TgConfig);
         this.Events = new TelegramEvents();
+        this.Cache = new TelegramCache();
         _telegram.Update += Events.Subscription;
+        _telegram.Update += Cache.Subscription;
 
         if (!string.IsNullOrEmpty(cfg.TgClientFloodAutoRetrySecondsThreshold) && int.TryParse(cfg.TgClientFloodAutoRetrySecondsThreshold, out var seconds))
         {
@@ -47,6 +50,8 @@ public class Telegram : IDisposable
 
     public async Task MarkChannelAsRead(string channelName, int maxReadMsgId)
     {
+        // todo: probably it's possible to implement some sort of caching here
+        // todo: try to use cached channel info instead of resolving username below
         var resolved = await _telegram.Contacts_ResolveUsername(channelName);
         if (resolved.UserOrChat is Channel channel)
         {
@@ -54,9 +59,9 @@ public class Telegram : IDisposable
             return;
         }
 
-        throw new InvalidCastException("Only channel messages getting is implemented");
+        throw new InvalidCastException("Only channel messages reading is implemented");
     }
-
+    
     public void Dispose()
     {
         _telegram.Dispose();

@@ -21,30 +21,30 @@ public class TelegramEvents
             switch (abstractUpdate)
             {
                 case UpdateEditChannelMessage {message: Message msg} update:
-                    OnUpdateEditChannelMessage(update, msg);
+                    OnUpdateEditChannelMessage?.Invoke(update, msg);
                     break;
                 case UpdateEditChannelMessage {message: MessageService msg} update:
-                    OnUpdateEditChannelMessageService(update, msg);
+                    OnUpdateEditChannelMessageService?.Invoke(update, msg);
                     break;
                 case UpdateUserStatus update:
-                    OnUpdateUserStatus(update);
+                    OnUpdateUserStatus?.Invoke(update);
                     break;
                 case UpdateMessagePoll update:
-                    OnUpdateMessagePoll(update); 
+                    OnUpdateMessagePoll?.Invoke(update); 
                     break;
                 default:
-                    OnUpdate(abstractUpdate);
+                    OnUpdate?.Invoke(abstractUpdate);
                     break;
             }
         }
     }
 
-    public Action<UpdateEditChannelMessage, Message> OnUpdateEditChannelMessage { get; set; } = (_, _) => { };
-    public Action<UpdateEditChannelMessage, MessageService> OnUpdateEditChannelMessageService { get; set; } = (_, _) => { };
-    public Action<UpdateMessagePoll> OnUpdateMessagePoll { get; set; } = (_) => { };
-    public Action<UpdateUserStatus> OnUpdateUserStatus { get; set; } = (_) => { };
+    public event Action<UpdateEditChannelMessage, Message>? OnUpdateEditChannelMessage;
+    public event Action<UpdateEditChannelMessage, MessageService>? OnUpdateEditChannelMessageService;
+    public event Action<UpdateMessagePoll>? OnUpdateMessagePoll;
+    public event Action<UpdateUserStatus>? OnUpdateUserStatus;
 
     /// <summary> Handler for untyped messages </summary>
-    public Action<Update> OnUpdate { get; set; } = (_) => { };
+    public event Action<Update>? OnUpdate;
 
 }

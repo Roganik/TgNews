@@ -1,4 +1,5 @@
 using TgNews.BL.Client;
+using TgNews.BL.Services;
 using TgNews.BL.Subscriptions;
 
 namespace TgNews.BL.Commands;
@@ -7,14 +8,14 @@ public class ForwardInterestingPostsCommand
 {
     private readonly Telegram _telegram;
     private readonly TelegramBot _telegramBot;
-    private readonly DbStorage _db;
     private readonly TgNewsConfiguration _cfg;
+    private readonly LastProcessedMsgIdForSubscriptionService _lastProcessedMsgIdService;
 
     public ForwardInterestingPostsCommand(Telegram telegram, TelegramBot telegramBot, DbStorage db, TgNewsConfiguration cfg)
     {
         _telegram = telegram;
         _telegramBot = telegramBot;
-        _db = db;
+        _lastProcessedMsgIdService = new LastProcessedMsgIdForSubscriptionService(db);
         _cfg = cfg;
     }
 
@@ -22,7 +23,7 @@ public class ForwardInterestingPostsCommand
     {
         foreach (var subscription in subscriptions)
         {
-            var lastMsgId = _db.ReadKey<int>(subscription.ChannelName);
+            var lastMsgId = _lastProcessedMsgIdService.Get(subscription);
             var isFirstRun = lastMsgId == 0;
 
             var resp = await _telegram.GetMessages(subscription.ChannelName, minMessageId: lastMsgId);
@@ -45,7 +46,8 @@ public class ForwardInterestingPostsCommand
 
             if (interestingMessagesIds.Length == 0)
             {
-                _db.SetKey(subscription.ChannelName, lastMsgId);
+                _lastProcessedMsgIdService.Save(subscription, lastMsgId);
+
                 continue;
             }
             
@@ -55,7 +57,7 @@ public class ForwardInterestingPostsCommand
             }
 
             await _telegramBot.ForwardMessages(interestingMessagesIds, subscription.ChannelName, _cfg.TgBotForwardToChannel);
-            _db.SetKey(subscription.ChannelName, lastMsgId);
+            _lastProcessedMsgIdService.Save(subscription, lastMsgId);
         }
     }
 }

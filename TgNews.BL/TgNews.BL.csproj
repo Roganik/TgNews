@@ -12,4 +12,14 @@
       <PackageReference Include="WTelegramClient" Version="1.9.2" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Queries" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+        <HintPath>..\..\..\.dotnet\packs\Microsoft.AspNetCore.App.Ref\6.0.0\ref\net6.0\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

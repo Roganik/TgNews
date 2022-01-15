@@ -24,6 +24,12 @@ public class TelegramBot : IDisposable
         await _telegramBot.Messages_ForwardMessages(fromChatPeer, msgIds, randomIds, toChatPeer);
     }
 
+    public async Task<long> GetChannelId(string channelName)
+    {
+        var channel = await _telegramBot.Contacts_ResolveUsername(channelName);
+        return channel.Chat.ID;
+    }
+
     public void Dispose()
     {
         _telegramBot?.Dispose();

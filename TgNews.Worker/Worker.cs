@@ -1,4 +1,5 @@
 using TgNews.BL;
+using TgNews.BL.Client;
 using TgNews.BL.Commands;
 
 namespace TgNews.Worker;
@@ -6,36 +7,34 @@ namespace TgNews.Worker;
 public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
-    private ForwardInterestingPostsCommand? _forwarder;
     private readonly int _sleepSeconds;
-    private readonly TgNewsConfiguration _tgCfg;
-    private readonly WorkerConfiguration _workerCfg;
-    private readonly TgSubscriptionsProvider _subscriptionsProvider;
+    private readonly ForwardInterestingPostsFromEventsCommand _job;
 
     public Worker(ILogger<Worker> logger, IConfiguration icfg)
     {
-        _tgCfg = new TgNewsConfiguration(icfg);
-        _workerCfg = new WorkerConfiguration(icfg);
         _logger = logger;
-        _sleepSeconds = _workerCfg.ForwarderCooldownSeconds;
-        _subscriptionsProvider = new TgSubscriptionsProvider();
+        
+        var workerCfg = new WorkerConfiguration(icfg);
+        var blCfg = new TgNewsConfiguration(icfg);
+        
+        _sleepSeconds = workerCfg.ForwarderCooldownSeconds;
+        
+        var tg = new Telegram(blCfg);
+        var bot = new TelegramBot(blCfg);
+        var db = new DbStorage(blCfg);
+
+        _job = new ForwardInterestingPostsFromEventsCommand(tg, bot, db, blCfg, new TgSubscriptionsProvider(), logger);
+        
+#if !DEBUG
+        WTelegram.Helpers.Log = (lvl, str) => _logger.Log((LogLevel)lvl, str);
+#endif
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Worker starting at: {time}", DateTimeOffset.Now);
         
-        WTelegram.Helpers.Log = (lvl, str) => _logger.Log((LogLevel)lvl, str);
-        
-        var db = new TgNews.BL.Client.DbStorage(_tgCfg);
-        var tg = new TgNews.BL.Client.Telegram(_tgCfg);
-        var tgBot = new TgNews.BL.Client.TelegramBot(_tgCfg);
-
-        await tg.Init();
-        await tgBot.Init();
-
-        _forwarder = new ForwardInterestingPostsCommand(tg, tgBot, db, _tgCfg);
-
+        await _job.Init();
         await base.StartAsync(cancellationToken);
     }
 
@@ -43,8 +42,7 @@ public class Worker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-            await _forwarder.Execute(_subscriptionsProvider.GetAll());
+            await _job.Execute();
             await Task.Delay(_sleepSeconds * 1000, stoppingToken);
         }
     }
