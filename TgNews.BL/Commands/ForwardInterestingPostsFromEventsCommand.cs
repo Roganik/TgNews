@@ -99,7 +99,10 @@ public class ForwardInterestingPostsFromEventsCommand
             }
 
             var maxMsgId = messagesToAnalyze.Select(m => m.Msg.id).Max();
-            await _tg.MarkChannelAsRead(subscription.ChannelName, maxMsgId);
+            if (subscription.MarkAsReadAutomatically)
+            {
+                await _tg.MarkChannelAsRead(subscription.ChannelName, maxMsgId);
+            }
             _lastProcessedMsgIdService.Save(subscription, maxMsgId);
 
             var interestingMessages = messagesToAnalyze.Where(m => subscription.IsMessageInteresting(m.Msg)).ToList();

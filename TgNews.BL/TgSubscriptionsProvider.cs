@@ -10,6 +10,9 @@ public class TgSubscriptionsProvider
         {
             new Bitkogan(),
             new GPBInvestments(),
+            new IfNews(),
+            new IfStocks(),
+            new GPBInvestments(),
         };
     }
 }
