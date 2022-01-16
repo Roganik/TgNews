@@ -14,7 +14,7 @@ public class ForwardInterestingPostsFromEventsCommand
     private readonly TgNewsConfiguration _cfg;
     private readonly TgSubscriptionsProvider _subscriptionsProvider;
     private readonly ILogger _logger;
-    private readonly LastProcessedMsgIdForSubscriptionService _lastProcessedMsgIdService;
+    private readonly SubscriptionService _subscriptionService;
     
     private readonly ConcurrentQueue<(long PeerId, Message Msg)> _unprocessedMessages = new();
     private readonly Dictionary<long, ITgSubscription> _peerIdToSubscriptionCache = new();
@@ -32,7 +32,7 @@ public class ForwardInterestingPostsFromEventsCommand
         _cfg = cfg;
         _subscriptionsProvider = subscriptionsProvider;
         _logger = logger;
-        _lastProcessedMsgIdService = new LastProcessedMsgIdForSubscriptionService(db);
+        _subscriptionService = new SubscriptionService(db);
     }
 
     public async Task Init()
@@ -51,13 +51,28 @@ public class ForwardInterestingPostsFromEventsCommand
         var subscriptions = _subscriptionsProvider.GetAll();
         foreach (var subscription in subscriptions)
         {
-            var id = await _bot.GetChannelId(subscription.ChannelName);
+            var id = await GetChannelId(subscription);
             _peerIdToSubscriptionCache[id] = subscription;
             _logger.LogInformation($"Channel: {subscription.ChannelName,20}, ID: {id}");
         }
         
         _logger.LogInformation("Init Done");
         await Task.Delay(2000); // getting some time for a job to catch up events from tg.
+    }
+
+    private async Task<long> GetChannelId(ITgSubscription subscription)
+    {
+        var cachedId = _subscriptionService.GetTelegramSubscriptionChannelId(subscription);
+        if (cachedId != default)
+        {
+            return cachedId;
+        }
+        
+        var id = await _bot.GetChannelId(subscription.ChannelName);
+        _subscriptionService.SaveTelegramSubscriptionChannelId(subscription, id);
+        
+        return id;
+       
     }
 
     public async Task Execute()
@@ -91,7 +106,7 @@ public class ForwardInterestingPostsFromEventsCommand
             }
 
             var subscription = peer.Subscription;
-            var lastProcessedMsg = _lastProcessedMsgIdService.Get(subscription);
+            var lastProcessedMsg = _subscriptionService.GetLastProcessedMsgId(subscription);
             var messagesToAnalyze = newMessages.Where(p => p.PeerId == peer.PeerId && p.Msg.id > lastProcessedMsg).ToList();
             if (messagesToAnalyze.Count == 0)
             {
@@ -103,7 +118,7 @@ public class ForwardInterestingPostsFromEventsCommand
             {
                 await _tg.MarkChannelAsRead(subscription.ChannelName, maxMsgId);
             }
-            _lastProcessedMsgIdService.Save(subscription, maxMsgId);
+            _subscriptionService.SaveLastProcessedMsgId(subscription, maxMsgId);
 
             var interestingMessages = messagesToAnalyze.Where(m => subscription.IsMessageInteresting(m.Msg)).ToList();
             if (interestingMessages.Count == 0)

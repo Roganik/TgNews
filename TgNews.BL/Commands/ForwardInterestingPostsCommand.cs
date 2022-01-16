@@ -9,13 +9,13 @@ public class ForwardInterestingPostsCommand
     private readonly Telegram _telegram;
     private readonly TelegramBot _telegramBot;
     private readonly TgNewsConfiguration _cfg;
-    private readonly LastProcessedMsgIdForSubscriptionService _lastProcessedMsgIdService;
+    private readonly SubscriptionService _subscriptionService;
 
     public ForwardInterestingPostsCommand(Telegram telegram, TelegramBot telegramBot, DbStorage db, TgNewsConfiguration cfg)
     {
         _telegram = telegram;
         _telegramBot = telegramBot;
-        _lastProcessedMsgIdService = new LastProcessedMsgIdForSubscriptionService(db);
+        _subscriptionService = new SubscriptionService(db);
         _cfg = cfg;
     }
 
@@ -23,7 +23,7 @@ public class ForwardInterestingPostsCommand
     {
         foreach (var subscription in subscriptions)
         {
-            var lastMsgId = _lastProcessedMsgIdService.Get(subscription);
+            var lastMsgId = _subscriptionService.GetLastProcessedMsgId(subscription);
             var isFirstRun = lastMsgId == 0;
 
             var resp = await _telegram.GetMessages(subscription.ChannelName, minMessageId: lastMsgId);
@@ -46,7 +46,7 @@ public class ForwardInterestingPostsCommand
 
             if (interestingMessagesIds.Length == 0)
             {
-                _lastProcessedMsgIdService.Save(subscription, lastMsgId);
+                _subscriptionService.SaveLastProcessedMsgId(subscription, lastMsgId);
 
                 continue;
             }
@@ -57,7 +57,7 @@ public class ForwardInterestingPostsCommand
             }
 
             await _telegramBot.ForwardMessages(interestingMessagesIds, subscription.ChannelName, _cfg.TgBotForwardToChannel);
-            _lastProcessedMsgIdService.Save(subscription, lastMsgId);
+            _subscriptionService.SaveLastProcessedMsgId(subscription, lastMsgId);
         }
     }
 }
