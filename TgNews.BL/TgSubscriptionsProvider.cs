@@ -12,7 +12,7 @@ public class TgSubscriptionsProvider
             new GPBInvestments(),
             new IfNews(),
             new IfStocks(),
-            new GPBInvestments(),
+            new MarketTwits(),
         };
     }
 }
