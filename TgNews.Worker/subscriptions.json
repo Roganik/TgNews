@@ -1,0 +1,11 @@
+{
+  "Subscriptions": [
+    {
+      "ChannelName": "armane",
+      "MarkAsReadAutomatically": true,
+      "StopWords" : [],
+      "InterestingWords": [],
+      "DefaultBehaviour": "ForwardMessage", // SkipMessage
+    },
+  ]
+}

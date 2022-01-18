@@ -24,8 +24,7 @@ public class TgNewsConfiguration
     
     private string FileDir => Path.GetDirectoryName(Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar))) 
                               ?? AppDomain.CurrentDomain.BaseDirectory;
-    protected string GetFilePath(string filename) => Path.Combine(FileDir, filename);
-    
+    private string GetFilePath(string filename) => Path.Combine(FileDir, filename);
     
     public string? TgConfig(string what)
     {

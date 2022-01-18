@@ -1,8 +1,6 @@
 using System.Reflection;
-using Newtonsoft.Json;
 using TgNews.BL;
 using TgNews.Worker;
-using TL;
 
 IHost host;
 var hostBuilder = Host.CreateDefaultBuilder(args)
@@ -14,6 +12,11 @@ var hostBuilder = Host.CreateDefaultBuilder(args)
         }
 
         configuration.AddEnvironmentVariables(prefix: "TGNEWS_");
+        configuration.AddJsonFile("subscriptions.json", optional: false);
+    })
+    .ConfigureServices((ctx, services) =>
+    {
+        services.Configure<SubscriptionsConfigurationSection>(ctx.Configuration.GetSection("Subscriptions"));
     });
 
 if (args.Any(arg => arg.ToLower() == "--server"))
@@ -30,28 +33,11 @@ if (args.Any(arg => arg.ToLower() == "--server"))
 
 // section for local experiments for cmd-like app
 host = hostBuilder.Build();
-var iCfg = host.Services.GetService<IConfiguration>();
-var cfg = new TgNewsConfiguration(iCfg);
-var logger = host.Services.GetService<ILogger<Program>>();
 
-var db = new TgNews.BL.Client.DbStorage(cfg);
-var tg = new TgNews.BL.Client.Telegram(cfg);
-var tgBot = new TgNews.BL.Client.TelegramBot(cfg);
+var subscriptionsCfg = host.Services.GetService<SubscriptionsConfigurationSection>();
+var subscriptionsProvider = host.Services.GetService<TgSubscriptionsProvider>();
+var subscriptions = subscriptionsProvider.GetAll();
 
-tg.Events.OnUpdate += (update) =>
-{
-    var type = update.GetType();
-    var serializerOpts = new JsonSerializerSettings() {Formatting = Formatting.Indented};
-    var json = JsonConvert.SerializeObject(update, type, serializerOpts);
-    logger.LogWarning($"Untyped update received: {type.Name}");
-    logger.LogInformation(json);
-};
-
-await tg.Init();
-await tgBot.Init();
-
-Console.WriteLine("Press any key to quit");
-Console.ReadKey();
-Console.ReadKey();
+host.WaitForShutdown();
 
 

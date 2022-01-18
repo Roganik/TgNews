@@ -10,7 +10,7 @@ public class Worker : BackgroundService
     private readonly int _sleepSeconds;
     private readonly ForwardInterestingPostsFromEventsCommand _job;
 
-    public Worker(ILogger<Worker> logger, IConfiguration icfg)
+    public Worker(ILogger<Worker> logger, IConfiguration icfg, TgSubscriptionsProvider subscriptions)
     {
         _logger = logger;
         
@@ -23,7 +23,7 @@ public class Worker : BackgroundService
         var bot = new TelegramBot(blCfg);
         var db = new DbStorage(blCfg);
 
-        _job = new ForwardInterestingPostsFromEventsCommand(tg, bot, db, blCfg, new TgSubscriptionsProvider(), logger);
+        _job = new ForwardInterestingPostsFromEventsCommand(tg, bot, db, blCfg, subscriptions, logger);
         
 #if !DEBUG
         WTelegram.Helpers.Log = (lvl, str) => _logger.Log((LogLevel)lvl, str);
