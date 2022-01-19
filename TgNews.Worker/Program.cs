@@ -16,7 +16,8 @@ var hostBuilder = Host.CreateDefaultBuilder(args)
     })
     .ConfigureServices((ctx, services) =>
     {
-        services.Configure<SubscriptionsConfigurationSection>(ctx.Configuration.GetSection("Subscriptions"));
+        services.AddSingleton<SubscriptionsConfiguration>(_ => ctx.Configuration.Get<SubscriptionsConfiguration>());
+        services.AddSingleton<TgSubscriptionsProvider>();
     });
 
 if (args.Any(arg => arg.ToLower() == "--server"))
@@ -34,7 +35,11 @@ if (args.Any(arg => arg.ToLower() == "--server"))
 // section for local experiments for cmd-like app
 host = hostBuilder.Build();
 
-var subscriptionsCfg = host.Services.GetService<SubscriptionsConfigurationSection>();
+var iCfg = host.Services.GetService<IConfiguration>();
+var typed = iCfg.Get<SubscriptionsConfiguration>();
+var typed2 = iCfg.GetSection("SubscriptionsSection").Get<SubscriptionsConfiguration>();
+var subscriptionsCfg = host.Services.GetService<SubscriptionsConfiguration>();
+
 var subscriptionsProvider = host.Services.GetService<TgSubscriptionsProvider>();
 var subscriptions = subscriptionsProvider.GetAll();
 

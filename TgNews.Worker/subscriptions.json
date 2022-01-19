@@ -7,5 +7,12 @@
       "InterestingWords": [],
       "DefaultBehaviour": "ForwardMessage", // SkipMessage
     },
+    {
+      "ChannelName": "karmane",
+      "MarkAsReadAutomatically": true,
+      "StopWords" : [],
+      "InterestingWords": ["addis", "abeba"],
+      "DefaultBehaviour": "SkipMessage",
+    }
   ]
 }

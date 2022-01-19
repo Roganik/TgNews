@@ -4,7 +4,7 @@ namespace TgNews.BL.Subscriptions;
 
 public class GenericSubscription : ITgSubscription
 {
-    public GenericSubscription(SubscriptionConfiguration cfg)
+    public GenericSubscription(SubscriptionCfg cfg)
     {
         if (string.IsNullOrEmpty(cfg.ChannelName))
         {
@@ -15,14 +15,14 @@ public class GenericSubscription : ITgSubscription
         this.InterestingWords = cfg.InterestingWords;
         this.StopWords = cfg.StopWords;
         this.MarkAsReadAutomatically = cfg.MarkAsReadAutomatically;
+        this.DefaultSubscriptionBehaviour = cfg.DefaultBehaviour;
     }
     
-    public string ChannelName { get; init; }
-    public bool MarkAsReadAutomatically { get; init; }
-    
-    public DefaultSubscriptionBehaviour DefaultSubscriptionBehaviour { get; set; }
-    public List<string> StopWords { get; init; }
-    public List<string> InterestingWords { get; init; }
+    public string ChannelName { get; }
+    public bool MarkAsReadAutomatically { get; }
+    public DefaultSubscriptionBehaviour DefaultSubscriptionBehaviour { get; }
+    public List<string> StopWords { get; }
+    public List<string> InterestingWords { get; }
     
     public bool IsMessageInteresting(Message message)
     {
@@ -40,17 +40,12 @@ public class GenericSubscription : ITgSubscription
             return true;
         }
 
-        if (this.DefaultSubscriptionBehaviour == DefaultSubscriptionBehaviour.ForwardMessage)
+        return this.DefaultSubscriptionBehaviour switch
         {
-            return true;
-        }
-
-        if (this.DefaultSubscriptionBehaviour == DefaultSubscriptionBehaviour.SkipMessage)
-        {
-            return false;
-        }
-
-        throw new NotImplementedException("Uh oh, seems like we in the impossible code path. Need to debug!");
+            DefaultSubscriptionBehaviour.ForwardMessage => true,
+            DefaultSubscriptionBehaviour.SkipMessage => false,
+            _ => throw new NotImplementedException("Uh oh, seems like we in the impossible code path. Need to debug!")
+        };
     }
 }
 

@@ -1,12 +1,15 @@
+using Microsoft.Extensions.Configuration;
 using TgNews.BL.Subscriptions;
 
 namespace TgNews.BL;
 
+
+
 public class TgSubscriptionsProvider
 {
-    private readonly SubscriptionsConfigurationSection _section;
+    private readonly SubscriptionsConfiguration _section;
 
-    public TgSubscriptionsProvider(SubscriptionsConfigurationSection section)
+    public TgSubscriptionsProvider(SubscriptionsConfiguration section)
     {
         _section = section;
     }
