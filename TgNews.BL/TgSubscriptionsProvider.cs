@@ -4,15 +4,21 @@ namespace TgNews.BL;
 
 public class TgSubscriptionsProvider
 {
+    private readonly SubscriptionsConfiguration _configuration;
+
+    public TgSubscriptionsProvider(SubscriptionsConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
+
     public List<ITgSubscription> GetAll()
     {
-        return new List<ITgSubscription>
+        var result = new List<ITgSubscription>();
+        foreach (var subscriptionCfg in _configuration.Subscriptions)
         {
-            new Bitkogan(),
-            new GPBInvestments(),
-            new IfNews(),
-            new IfStocks(),
-            new MarketTwits(),
-        };
-    }
+            result.Add(new GenericSubscription(subscriptionCfg));
+        }
+
+        return result;
+}
 }

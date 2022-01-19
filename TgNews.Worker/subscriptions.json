@@ -1,0 +1,11 @@
+{
+  "Subscriptions": [
+//    {
+//      "ChannelName": "",
+//      "MarkAsReadAutomatically": true,
+//      "StopWords" : [ ],
+//      "InterestingWords": [],
+//      "DefaultBehaviour": "ForwardMessage", // or SkipMessage
+//    },
+  ]
+}
