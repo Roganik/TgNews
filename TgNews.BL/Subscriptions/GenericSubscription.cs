@@ -20,9 +20,10 @@ public class GenericSubscription : ITgSubscription
     
     public string ChannelName { get; }
     public bool MarkAsReadAutomatically { get; }
-    public DefaultSubscriptionBehaviour DefaultSubscriptionBehaviour { get; }
-    public List<string> StopWords { get; }
-    public List<string> InterestingWords { get; }
+
+    private DefaultSubscriptionBehaviour DefaultSubscriptionBehaviour { get; }
+    private List<string> StopWords { get; }
+    private List<string> InterestingWords { get; }
     
     public bool IsMessageInteresting(Message message)
     {

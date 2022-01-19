@@ -1,18 +1,11 @@
 {
   "Subscriptions": [
-    {
-      "ChannelName": "armane",
-      "MarkAsReadAutomatically": true,
-      "StopWords" : [],
-      "InterestingWords": [],
-      "DefaultBehaviour": "ForwardMessage", // SkipMessage
-    },
-    {
-      "ChannelName": "karmane",
-      "MarkAsReadAutomatically": true,
-      "StopWords" : [],
-      "InterestingWords": ["addis", "abeba"],
-      "DefaultBehaviour": "SkipMessage",
-    }
+//    {
+//      "ChannelName": "",
+//      "MarkAsReadAutomatically": true,
+//      "StopWords" : [ ],
+//      "InterestingWords": [],
+//      "DefaultBehaviour": "ForwardMessage", // or SkipMessage
+//    },
   ]
 }

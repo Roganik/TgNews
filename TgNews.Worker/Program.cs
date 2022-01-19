@@ -9,10 +9,12 @@ var hostBuilder = Host.CreateDefaultBuilder(args)
         if (hostingCtx.HostingEnvironment.IsDevelopment())
         {
             configuration.AddUserSecrets(Assembly.GetExecutingAssembly());
+            configuration.AddJsonFile("subscriptions.Development.json");
         }
 
         configuration.AddEnvironmentVariables(prefix: "TGNEWS_");
         configuration.AddJsonFile("subscriptions.json", optional: false);
+
     })
     .ConfigureServices((ctx, services) =>
     {
@@ -37,9 +39,8 @@ host = hostBuilder.Build();
 
 var iCfg = host.Services.GetService<IConfiguration>();
 var typed = iCfg.Get<SubscriptionsConfiguration>();
-var typed2 = iCfg.GetSection("SubscriptionsSection").Get<SubscriptionsConfiguration>();
-var subscriptionsCfg = host.Services.GetService<SubscriptionsConfiguration>();
 
+var subscriptionsCfg = host.Services.GetService<SubscriptionsConfiguration>();
 var subscriptionsProvider = host.Services.GetService<TgSubscriptionsProvider>();
 var subscriptions = subscriptionsProvider.GetAll();
 

@@ -4,7 +4,7 @@ namespace TgNews.BL;
 
 public class SubscriptionsConfiguration
 {
-    public SubscriptionCfg[] Subscriptions { get; set; }
+    public SubscriptionCfg[] Subscriptions { get; set; } = Array.Empty<SubscriptionCfg>();
 }
 
 public class SubscriptionCfg 
