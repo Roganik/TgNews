@@ -16,6 +16,22 @@ var hostBuilder = Host.CreateDefaultBuilder(args)
         configuration.AddJsonFile("subscriptions.json", optional: false);
 
     })
+    .ConfigureLogging((ctx, logging) =>
+    {
+        var sentryDsn = ctx.Configuration.GetValue<string>("Sentry:Dsn");
+        if (string.IsNullOrEmpty(sentryDsn))
+        {
+            return;
+        }
+        
+        logging.AddSentry(o =>
+        {
+            o.Dsn = sentryDsn;
+            o.MinimumBreadcrumbLevel = LogLevel.Debug;
+            o.MinimumEventLevel = LogLevel.Warning;
+            o.MaxBreadcrumbs = 50;
+        });
+    })
     .ConfigureServices((ctx, services) =>
     {
         services.AddSingleton<SubscriptionsConfiguration>(_ => ctx.Configuration.Get<SubscriptionsConfiguration>());
