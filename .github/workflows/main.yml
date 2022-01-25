@@ -16,7 +16,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - 
+        name: Output Run ID
+        run: echo ${{ github.run_id }}
       -
+        name: Output Run Number
+        run: echo ${{ github.run_number }}
+      -
+        name: Output Run Attempt
+        run: echo ${{ github.run_attempt }}
+      -  
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       -
@@ -37,3 +46,4 @@ jobs:
           push: ${{ github.ref == 'refs/heads/master' }}
           file: TgNews.Worker/Dockerfile
           tags: ghcr.io/roganik/tgnews:latest
+          build-args: APP_VERSION_SUFFIX=${{ github.run_number }}
