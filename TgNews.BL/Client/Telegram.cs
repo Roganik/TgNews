@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using TL;
 
 namespace TgNews.BL.Client;
@@ -8,10 +9,10 @@ public class Telegram : IDisposable
     public TelegramEvents Events { get; }
     public TelegramCache Cache { get; }
 
-    public Telegram(TgNewsConfiguration cfg)
+    public Telegram(TgNewsConfiguration cfg, ILogger<TelegramEvents> logger)
     {
         _telegram = new WTelegram.Client(cfg.TgConfig);
-        this.Events = new TelegramEvents();
+        this.Events = new TelegramEvents(logger);
         this.Cache = new TelegramCache();
         _telegram.Update += Events.Subscription;
         _telegram.Update += Cache.Subscription;

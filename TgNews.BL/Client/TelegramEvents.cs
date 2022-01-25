@@ -1,21 +1,30 @@
+using Microsoft.Extensions.Logging;
 using TL;
 
 namespace TgNews.BL.Client;
 
 public class TelegramEvents
 {
-    internal TelegramEvents()
-    {
+    private readonly ILogger<TelegramEvents> _logger;
 
+    internal TelegramEvents(ILogger<TelegramEvents> logger)
+    {
+        _logger = logger;
     }
 
     internal void Subscription(IObject arg)
     {
-        if (arg is not UpdatesBase updates)
+        if (arg is ReactorError re)
         {
-            return;
+            throw new Exception($"ReactorError in {nameof(TelegramEvents)}.{nameof(Subscription)}", re.Exception);
         }
 
+        if (arg is not UpdatesBase updates)
+        {
+            _logger.LogWarning($"Unexpected Telegram event received. Type= {arg.GetType()}");
+            return;
+        }
+        
         foreach (var abstractUpdate in updates.UpdateList)
         {
             switch (abstractUpdate)
