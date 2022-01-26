@@ -5,23 +5,27 @@ namespace TgNews.BL.Client;
 
 public class TelegramEvents
 {
-    private readonly ILogger<TelegramEvents> _logger;
-
-    internal TelegramEvents(ILogger<TelegramEvents> logger)
+    internal TelegramEvents()
     {
-        _logger = logger;
     }
 
     internal void Subscription(IObject arg)
     {
         if (arg is ReactorError re)
         {
-            throw new Exception($"ReactorError in {nameof(TelegramEvents)}.{nameof(Subscription)}", re.Exception);
+            OnReactorError?.Invoke(re);
+            return;
+        }
+
+        if (arg is TL.Updates_State us)
+        {
+            OnUpdateState?.Invoke(us);
+            return;
         }
 
         if (arg is not UpdatesBase updates)
         {
-            _logger.LogWarning($"Unexpected Telegram event received. Type= {arg.GetType()}");
+            OnUnknownEvent?.Invoke(arg);
             return;
         }
         
@@ -47,6 +51,10 @@ public class TelegramEvents
             }
         }
     }
+
+    public event Action<IObject>? OnUnknownEvent;
+    public event Action<Updates_State>? OnUpdateState;
+    public event Action<ReactorError>? OnReactorError;
 
     public event Action<UpdateEditChannelMessage, Message>? OnUpdateEditChannelMessage;
     public event Action<UpdateEditChannelMessage, MessageService>? OnUpdateEditChannelMessageService;

@@ -10,24 +10,35 @@ public class Worker : BackgroundService
     private readonly int _sleepSeconds;
     private readonly ForwardInterestingPostsFromEventsCommand _job;
 
-    public Worker(ILogger<Worker> logger, ILogger<TelegramEvents> tgEventsLogger, IConfiguration icfg, TgSubscriptionsProvider subscriptions)
+    public Worker(ILoggerFactory loggerFactory, IConfiguration icfg, TgSubscriptionsProvider subscriptions)
     {
-        _logger = logger;
+        _logger = loggerFactory.CreateLogger<Worker>();
         
         var workerCfg = new WorkerConfiguration(icfg);
         var blCfg = new TgNewsConfiguration(icfg);
         
         _sleepSeconds = workerCfg.ForwarderCooldownSeconds;
         
-        var tg = new Telegram(blCfg, tgEventsLogger);
+        var tg = new Telegram(blCfg);
+        ConfigureTelegramEvents(tg.Events, loggerFactory);
         var bot = new TelegramBot(blCfg);
         var db = new DbStorage(blCfg);
 
-        _job = new ForwardInterestingPostsFromEventsCommand(tg, bot, db, blCfg, subscriptions, logger);
-        
+        var newPostsLogger = loggerFactory.CreateLogger("ForwardNewPosts");
+        _job = new ForwardInterestingPostsFromEventsCommand(tg, bot, db, blCfg, subscriptions, newPostsLogger);
+
 #if !DEBUG
-        WTelegram.Helpers.Log = (lvl, str) => _logger.Log((LogLevel)lvl, str);
+        var wTelegramLogger = loggerFactory.CreateLogger("WTelegram");
+        WTelegram.Helpers.Log = (lvl, str) => wTelegramLogger.Log((LogLevel)lvl, str);
 #endif
+    }
+
+    private void ConfigureTelegramEvents(TelegramEvents events, ILoggerFactory loggerFactory)
+    {
+        var eventsLogger = loggerFactory.CreateLogger<TelegramEvents>();
+        events.OnReactorError += (re) => { throw new Exception($"ReactorError in telegram client", re.Exception); };
+        events.OnUnknownEvent += (arg) => { eventsLogger.LogWarning($"Unexpected Telegram event received. Type= {arg.GetType()}"); };
+        // events.OnUpdate += (update) => { eventsLogger.LogInformation($"Unknown update received. Type = {update.GetType()}"); };
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken)

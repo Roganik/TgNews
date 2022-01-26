@@ -9,10 +9,10 @@ public class Telegram : IDisposable
     public TelegramEvents Events { get; }
     public TelegramCache Cache { get; }
 
-    public Telegram(TgNewsConfiguration cfg, ILogger<TelegramEvents> logger)
+    public Telegram(TgNewsConfiguration cfg)
     {
         _telegram = new WTelegram.Client(cfg.TgConfig);
-        this.Events = new TelegramEvents(logger);
+        this.Events = new TelegramEvents();
         this.Cache = new TelegramCache();
         _telegram.Update += Events.Subscription;
         _telegram.Update += Cache.Subscription;
