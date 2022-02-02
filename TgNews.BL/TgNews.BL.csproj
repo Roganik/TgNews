@@ -13,8 +13,4 @@
       <PackageReference Include="WTelegramClient" Version="2.0.1" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Queries" />
-    </ItemGroup>
-
 </Project>
