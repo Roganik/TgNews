@@ -132,7 +132,7 @@ public class ForwardInterestingPostsFromEventsCommand
             _logger.LogInformation($"Forwarded {interestingMessages.Count,2} interesting messages from {subscription.ChannelName}");
         }
     }
-    
+
     private ITgSubscription? GetSubscription(long peerId)
     {
         if (_peerIdToSubscriptionCache.TryGetValue(peerId, out var subscription))

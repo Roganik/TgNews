@@ -5,22 +5,48 @@ namespace TgNews.BL.Client;
 
 public class Telegram : IDisposable
 {
-    private readonly WTelegram.Client _telegram;
+    private readonly TgNewsConfiguration _cfg;
+    private WTelegram.Client _telegram;
     public TelegramEvents Events { get; }
     public TelegramCache Cache { get; }
 
-    public Telegram(TgNewsConfiguration cfg)
+    public Telegram(TgNewsConfiguration cfg, ILogger<Telegram> logger)
     {
-        _telegram = new WTelegram.Client(cfg.TgConfig);
+        _cfg = cfg;
         this.Events = new TelegramEvents();
         this.Cache = new TelegramCache();
-        _telegram.Update += Events.Subscription;
-        _telegram.Update += Cache.Subscription;
+        _telegram = CreateNewTelegramInstance();
 
-        if (!string.IsNullOrEmpty(cfg.TgClientFloodAutoRetrySecondsThreshold) && int.TryParse(cfg.TgClientFloodAutoRetrySecondsThreshold, out var seconds))
+        Events.OnReactorError += (re) =>
         {
-            _telegram.FloodRetryThreshold = seconds;
+            logger.LogCritical("Received ReactorError from telegram client. Will Try to re-create WTelegram.Client");
+            _telegram.Dispose();
+
+            logger.LogCritical("Creating new WTelegram.Client instance");
+            _telegram = CreateNewTelegramInstance();
+
+            logger.LogCritical("Created new WTelegram.Client instance. Logging in");
+            Init();
+        };
+
+        Events.OnUnknownEvent += (arg) =>
+        {
+            logger.LogWarning($"Unexpected Telegram event received. Type= {arg.GetType()}");
+        };
+    }
+
+    private WTelegram.Client CreateNewTelegramInstance()
+    {
+        var telegram = new WTelegram.Client(_cfg.TgConfig);
+        telegram.Update += Events.Subscription;
+        telegram.Update += Cache.Subscription;
+
+        if (!string.IsNullOrEmpty(_cfg.TgClientFloodAutoRetrySecondsThreshold) && int.TryParse(_cfg.TgClientFloodAutoRetrySecondsThreshold, out var seconds))
+        {
+            telegram.FloodRetryThreshold = seconds;
         }
+
+        return telegram;
     }
 
     public Task Init()
@@ -42,7 +68,7 @@ public class Telegram : IDisposable
                 .Select(m => m as Message) // filter out TL.MessageService
                 .Where(m => m != null)
                 .ToList();
-            
+
             return (messages, resolved)!;
         }
 
@@ -62,7 +88,7 @@ public class Telegram : IDisposable
 
         throw new InvalidCastException("Only channel messages reading is implemented");
     }
-    
+
     public void Dispose()
     {
         _telegram.Dispose();

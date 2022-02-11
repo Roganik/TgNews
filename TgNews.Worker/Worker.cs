@@ -18,9 +18,9 @@ public class Worker : BackgroundService
         var blCfg = new TgNewsConfiguration(icfg);
         
         _sleepSeconds = workerCfg.ForwarderCooldownSeconds;
-        
-        var tg = new Telegram(blCfg);
-        ConfigureTelegramEvents(tg.Events, loggerFactory);
+
+        var tgLogger = loggerFactory.CreateLogger<Telegram>();
+        var tg = new Telegram(blCfg, tgLogger);
         var bot = new TelegramBot(blCfg);
         var db = new DbStorage(blCfg);
 
@@ -31,14 +31,6 @@ public class Worker : BackgroundService
         var wTelegramLogger = loggerFactory.CreateLogger("WTelegram");
         WTelegram.Helpers.Log = (lvl, str) => wTelegramLogger.Log((LogLevel)lvl, str);
 #endif
-    }
-
-    private void ConfigureTelegramEvents(TelegramEvents events, ILoggerFactory loggerFactory)
-    {
-        var eventsLogger = loggerFactory.CreateLogger<TelegramEvents>();
-        events.OnReactorError += (re) => { throw new Exception($"ReactorError in telegram client", re.Exception); };
-        events.OnUnknownEvent += (arg) => { eventsLogger.LogWarning($"Unexpected Telegram event received. Type= {arg.GetType()}"); };
-        // events.OnUpdate += (update) => { eventsLogger.LogInformation($"Unknown update received. Type = {update.GetType()}"); };
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken)
