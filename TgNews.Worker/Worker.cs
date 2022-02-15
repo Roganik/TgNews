@@ -9,6 +9,7 @@ public class Worker : BackgroundService
     private readonly ILogger<Worker> _logger;
     private readonly int _sleepSeconds;
     private readonly ForwardInterestingPostsFromEventsCommand _job;
+    private readonly LogUnknownEventsCommand _logUnknownEventsJob;
 
     public Worker(ILoggerFactory loggerFactory, IConfiguration icfg, TgSubscriptionsProvider subscriptions)
     {
@@ -26,6 +27,8 @@ public class Worker : BackgroundService
 
         var newPostsLogger = loggerFactory.CreateLogger("ForwardNewPosts");
         _job = new ForwardInterestingPostsFromEventsCommand(tg, bot, db, blCfg, subscriptions, newPostsLogger);
+        var unknownEventsLogger = loggerFactory.CreateLogger("UnknownEvents");
+        _logUnknownEventsJob = new LogUnknownEventsCommand(tg, unknownEventsLogger);
 
 #if !DEBUG
         var wTelegramLogger = loggerFactory.CreateLogger("WTelegram");
@@ -36,7 +39,8 @@ public class Worker : BackgroundService
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Worker starting at: {time}", DateTimeOffset.Now);
-        
+
+        await _logUnknownEventsJob.Init();
         await _job.Init();
         await base.StartAsync(cancellationToken);
     }
