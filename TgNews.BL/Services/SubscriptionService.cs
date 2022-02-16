@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using TgNews.BL.Client;
 using TgNews.BL.Subscriptions;
 
@@ -18,12 +17,12 @@ public class SubscriptionService
         _bot = bot;
     }
     
-    public void SaveLastProcessedMsgId(ITgSubscription subscription, int lastReadMsgId)
+    public void SaveLastReadMsgId(ITgSubscription subscription, int lastReadMsgId)
     {
         _db.SetKey(subscription.ChannelName + "_tgLastReadMsgId", lastReadMsgId);
     }
 
-    public int GetLastProcessedMsgId(ITgSubscription subscription)
+    public int GetLastReadMsgId(ITgSubscription subscription)
     {
         return _db.ReadKey<int>(subscription.ChannelName + "_tgLastReadMsgId");
     }

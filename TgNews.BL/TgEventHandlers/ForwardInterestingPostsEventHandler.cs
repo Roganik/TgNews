@@ -82,19 +82,12 @@ public class ForwardInterestingPostsFromEventsCommand
                 continue;
             }
 
-            var lastProcessedMsg = _subscriptionService.GetLastProcessedMsgId(subscription);
+            var lastProcessedMsg = _subscriptionService.GetLastReadMsgId(subscription); // todo: read != forwarded. Need to store new variable
             var messagesToAnalyze = newMessages.Where(p => p.PeerId == peer.PeerId && p.Msg.id > lastProcessedMsg).ToList();
             if (messagesToAnalyze.Count == 0)
             {
                 continue;
             }
-
-            var maxMsgId = messagesToAnalyze.Select(m => m.Msg.id).Max();
-            if (subscription.MarkAsReadAutomatically)
-            {
-                await _tg.MarkChannelAsRead(subscription.ChannelName, maxMsgId);
-            }
-            _subscriptionService.SaveLastProcessedMsgId(subscription, maxMsgId);
 
             var interestingMessages = messagesToAnalyze.Where(m => subscription.IsMessageInteresting(m.Msg)).ToList();
             if (interestingMessages.Count == 0)
@@ -104,7 +97,8 @@ public class ForwardInterestingPostsFromEventsCommand
             
             var msgIdToForward = interestingMessages.Select(m => m.Msg.id).ToArray();
             await _bot.ForwardMessages(msgIdToForward, subscription.ChannelName, _cfg.TgBotForwardToChannel);
-            
+            // todo: save last forwarded msg
+
             _logger.LogInformation($"Forwarded {interestingMessages.Count,2} interesting messages from {subscription.ChannelName}");
         }
     }
