@@ -1,12 +1,10 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using TgNews.BL.Client;
-using TgNews.BL.Repositories;
 using TgNews.BL.Services;
-using TgNews.BL.Subscriptions;
 using TL;
 
-namespace TgNews.BL.Commands;
+namespace TgNews.BL.TgEventHandlers;
 
 public class MarkSubscriptionsAsReadEventHandler
 {
@@ -20,20 +18,19 @@ public class MarkSubscriptionsAsReadEventHandler
 
     public MarkSubscriptionsAsReadEventHandler(
         Client.Telegram tg,
-        Client.TelegramBot bot,
-        SubscriptionRepository repo,
+        SubscriptionService service,
         TgSubscriptionsProvider subscriptionsProvider,
-        ILogger logger)
+        ILoggerFactory loggerFactory)
     {
         _tg = tg;
         _subscriptionsProvider = subscriptionsProvider;
-        _logger = logger;
-        _subscriptionService = new SubscriptionService(repo, bot);
+        _logger = loggerFactory.CreateLogger("MarkAsRead");
+        _subscriptionService = service;
     }
 
-    public void Init()
+    public void Subscribe(Telegram tg)
     {
-        _tg.Events.OnUpdateEditChannelMessage += (update, msg) =>
+        tg.Events.OnUpdateEditChannelMessage += (update, msg) =>
         {
             var peerId = msg.peer_id.ID;
             _unprocessedMessages.Enqueue((peerId, msg));
@@ -45,7 +42,6 @@ public class MarkSubscriptionsAsReadEventHandler
         var newMessages = GetAllUnprocessedMessages().ToList();
         if (newMessages.Count == 0)
         {
-            _logger.LogInformation($"Don't have new messages to analyze");
             return;
         }
 

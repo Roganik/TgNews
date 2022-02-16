@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using TgNews.BL.Client;
-using TgNews.BL.Repositories;
 using TgNews.BL.Services;
 using TL;
 
@@ -9,46 +8,35 @@ namespace TgNews.BL.TgEventHandlers;
 
 public class ForwardInterestingPostsFromEventsCommand
 {
-    private readonly Telegram _tg;
     private readonly TelegramBot _bot;
-    private readonly TgNewsConfiguration _cfg;
     private readonly TgSubscriptionsProvider _subscriptionsProvider;
     private readonly ILogger _logger;
     private readonly SubscriptionService _subscriptionService;
     
     private readonly ConcurrentQueue<(long PeerId, Message Msg)> _unprocessedMessages = new();
-
+    private readonly string _forwardToChannel;
 
     public ForwardInterestingPostsFromEventsCommand(
-        Client.Telegram tg,
         Client.TelegramBot bot,
-        SubscriptionRepository repo,
         TgNewsConfiguration cfg,
+        SubscriptionService subscriptionService,
         TgSubscriptionsProvider subscriptionsProvider,
-        ILogger logger)
+        ILoggerFactory loggerFactory)
     {
-        _tg = tg;
         _bot = bot;
-        _cfg = cfg;
         _subscriptionsProvider = subscriptionsProvider;
-        _logger = logger;
-        _subscriptionService = new SubscriptionService(repo, _bot);
+        _subscriptionService = subscriptionService;
+        _forwardToChannel = cfg.TgBotForwardToChannel;
+        _logger = loggerFactory.CreateLogger("ForwardNewPosts");
     }
 
-    public async Task Init()
+    public void Subscribe(Telegram tg)
     {
-        _tg.Events.OnUpdateEditChannelMessage += (update, msg) =>
+        tg.Events.OnUpdateEditChannelMessage += (update, msg) =>
         {
             var peerId = msg.peer_id.ID;
             _unprocessedMessages.Enqueue((peerId, msg));
         };
-        
-        _logger.LogInformation("Initializing tg and bot");
-        await _tg.Init();
-        await _bot.Init();
-
-        _logger.LogInformation("Init Done");
-        await Task.Delay(2000); // getting some time for a job to catch up events from tg.
     }
 
     public async Task Execute()
@@ -96,7 +84,7 @@ public class ForwardInterestingPostsFromEventsCommand
             }
             
             var msgIdToForward = interestingMessages.Select(m => m.Msg.id).ToArray();
-            await _bot.ForwardMessages(msgIdToForward, subscription.ChannelName, _cfg.TgBotForwardToChannel);
+            await _bot.ForwardMessages(msgIdToForward, subscription.ChannelName, _forwardToChannel);
             _subscriptionService.SaveLastForwardedMsgId(subscription, msgIdToForward.Max());
 
             _logger.LogInformation($"Forwarded {interestingMessages.Count,2} interesting messages from {subscription.ChannelName}");

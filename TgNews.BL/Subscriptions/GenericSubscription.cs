@@ -17,7 +17,7 @@ public class GenericSubscription : ITgSubscription
         this.MarkAsReadAutomatically = cfg.MarkAsReadAutomatically;
         this.DefaultSubscriptionBehaviour = cfg.DefaultBehaviour;
     }
-    
+
     public string ChannelName { get; }
     public bool MarkAsReadAutomatically { get; }
 

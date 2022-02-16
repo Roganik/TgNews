@@ -1,7 +1,7 @@
 using TgNews.BL;
 using TgNews.BL.Client;
-using TgNews.BL.Commands;
 using TgNews.BL.Repositories;
+using TgNews.BL.Services;
 using TgNews.BL.TgEventHandlers;
 
 namespace TgNews.Worker;
@@ -10,9 +10,11 @@ public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
     private readonly int _sleepSeconds;
-    private readonly ForwardInterestingPostsFromEventsCommand _job;
+    private readonly ForwardInterestingPostsFromEventsCommand _interestingPostsJob;
     private readonly UnknownEventHandler _unknownEventsHandler;
     private readonly Telegram _tg;
+    private readonly MarkSubscriptionsAsReadEventHandler _markAsReadJob;
+    private readonly TelegramBot _bot;
 
     public Worker(ILoggerFactory loggerFactory, IConfiguration icfg, TgSubscriptionsProvider subscriptions)
     {
@@ -25,11 +27,13 @@ public class Worker : BackgroundService
 
         var tgLogger = loggerFactory.CreateLogger<Telegram>();
         _tg = new Telegram(blCfg, tgLogger);
-        var bot = new TelegramBot(blCfg);
+        _bot = new TelegramBot(blCfg);
         var db = new SubscriptionRepository(blCfg);
+        var service = new SubscriptionService(db, _bot);
 
-        var newPostsLogger = loggerFactory.CreateLogger("ForwardNewPosts");
-        _job = new ForwardInterestingPostsFromEventsCommand(_tg, bot, db, blCfg, subscriptions, newPostsLogger);
+
+        _interestingPostsJob = new ForwardInterestingPostsFromEventsCommand(_bot, blCfg, service, subscriptions, loggerFactory);
+        _markAsReadJob = new MarkSubscriptionsAsReadEventHandler(_tg, service, subscriptions, loggerFactory);
         _unknownEventsHandler = new UnknownEventHandler(loggerFactory);
 
 #if !DEBUG
@@ -42,8 +46,13 @@ public class Worker : BackgroundService
     {
         _logger.LogInformation("Worker starting at: {time}", DateTimeOffset.Now);
 
+        await _bot.Init();
+
         _unknownEventsHandler.Subscribe(_tg);
-        await _job.Init();
+        _markAsReadJob.Subscribe(_tg);
+        _interestingPostsJob.Subscribe(_tg);
+
+        await _tg.Init();
         await base.StartAsync(cancellationToken);
     }
 
@@ -51,7 +60,8 @@ public class Worker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            await _job.Execute();
+            await _interestingPostsJob.Execute();
+            await _markAsReadJob.Execute();
             await Task.Delay(_sleepSeconds * 1000, stoppingToken);
         }
     }
