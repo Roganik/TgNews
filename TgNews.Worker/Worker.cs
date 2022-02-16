@@ -1,6 +1,7 @@
 using TgNews.BL;
 using TgNews.BL.Client;
 using TgNews.BL.Commands;
+using TgNews.BL.TgEventHandlers;
 
 namespace TgNews.Worker;
 
@@ -9,7 +10,8 @@ public class Worker : BackgroundService
     private readonly ILogger<Worker> _logger;
     private readonly int _sleepSeconds;
     private readonly ForwardInterestingPostsFromEventsCommand _job;
-    private readonly LogUnknownEventsCommand _logUnknownEventsJob;
+    private readonly UnknownEventHandler _unknownEventsHandler;
+    private readonly Telegram _tg;
 
     public Worker(ILoggerFactory loggerFactory, IConfiguration icfg, TgSubscriptionsProvider subscriptions)
     {
@@ -21,14 +23,13 @@ public class Worker : BackgroundService
         _sleepSeconds = workerCfg.ForwarderCooldownSeconds;
 
         var tgLogger = loggerFactory.CreateLogger<Telegram>();
-        var tg = new Telegram(blCfg, tgLogger);
+        _tg = new Telegram(blCfg, tgLogger);
         var bot = new TelegramBot(blCfg);
         var db = new DbStorage(blCfg);
 
         var newPostsLogger = loggerFactory.CreateLogger("ForwardNewPosts");
-        _job = new ForwardInterestingPostsFromEventsCommand(tg, bot, db, blCfg, subscriptions, newPostsLogger);
-        var unknownEventsLogger = loggerFactory.CreateLogger("UnknownEvents");
-        _logUnknownEventsJob = new LogUnknownEventsCommand(tg, unknownEventsLogger);
+        _job = new ForwardInterestingPostsFromEventsCommand(_tg, bot, db, blCfg, subscriptions, newPostsLogger);
+        _unknownEventsHandler = new UnknownEventHandler(loggerFactory);
 
 #if !DEBUG
         var wTelegramLogger = loggerFactory.CreateLogger("WTelegram");
@@ -40,7 +41,7 @@ public class Worker : BackgroundService
     {
         _logger.LogInformation("Worker starting at: {time}", DateTimeOffset.Now);
 
-        await _logUnknownEventsJob.Init();
+        _unknownEventsHandler.Subscribe(_tg);
         await _job.Init();
         await base.StartAsync(cancellationToken);
     }

@@ -2,24 +2,21 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using TgNews.BL.Client;
 
-namespace TgNews.BL.Commands;
+namespace TgNews.BL.TgEventHandlers;
 
-public class LogUnknownEventsCommand
+public class UnknownEventHandler
 {
-    private readonly Telegram _tg;
     private readonly ILogger _logger;
 
-    public LogUnknownEventsCommand(
-        Client.Telegram tg,
-        ILogger logger)
+    public UnknownEventHandler(
+        ILoggerFactory loggerFactory)
     {
-        _tg = tg;
-        _logger = logger;
+        _logger = loggerFactory.CreateLogger("UnknownEvents");
     }
 
-    public async Task Init()
+    public void Subscribe(Telegram tg)
     {
-        _tg.Events.OnUpdate += (update) =>
+        tg.Events.OnUpdate += (update) =>
         {
             var updateType = update.GetType();
             var serializerOpts = new JsonSerializerSettings() { Formatting = Formatting.Indented };
