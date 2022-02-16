@@ -16,13 +16,13 @@ public class Worker : BackgroundService
     private readonly MarkSubscriptionsAsReadEventHandler _markAsReadJob;
     private readonly TelegramBot _bot;
 
-    public Worker(ILoggerFactory loggerFactory, IConfiguration icfg, TgSubscriptionsProvider subscriptions)
+    public Worker(ILoggerFactory loggerFactory, IConfiguration icfg, SubscriptionsConfiguration subscriptionsCfg)
     {
         _logger = loggerFactory.CreateLogger<Worker>();
         
         var workerCfg = new WorkerConfiguration(icfg);
         var blCfg = new TgNewsConfiguration(icfg);
-        
+
         _sleepSeconds = workerCfg.ForwarderCooldownSeconds;
 
         var tgLogger = loggerFactory.CreateLogger<Telegram>();
@@ -32,6 +32,7 @@ public class Worker : BackgroundService
         var service = new SubscriptionService(subscriptionRepo, _bot);
         var eventsRepo = new EventRepository(blCfg);
 
+        var subscriptions = new TgSubscriptionsProvider(subscriptionsCfg, service);
 
         _interestingPostsJob = new ForwardInterestingPostsFromEventsCommand(_bot, blCfg, service, subscriptions, loggerFactory);
         _markAsReadJob = new MarkSubscriptionsAsReadEventHandler(_tg, service, subscriptions, loggerFactory);

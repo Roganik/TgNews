@@ -35,7 +35,6 @@ var hostBuilder = Host.CreateDefaultBuilder(args)
     .ConfigureServices((ctx, services) =>
     {
         services.AddSingleton<SubscriptionsConfiguration>(_ => ctx.Configuration.Get<SubscriptionsConfiguration>());
-        services.AddSingleton<TgSubscriptionsProvider>();
     });
 
 if (args.Any(arg => arg.ToLower() == "--server"))
