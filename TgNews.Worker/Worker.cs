@@ -28,13 +28,14 @@ public class Worker : BackgroundService
         var tgLogger = loggerFactory.CreateLogger<Telegram>();
         _tg = new Telegram(blCfg, tgLogger);
         _bot = new TelegramBot(blCfg);
-        var db = new SubscriptionRepository(blCfg);
-        var service = new SubscriptionService(db, _bot);
+        var subscriptionRepo = new SubscriptionRepository(blCfg);
+        var service = new SubscriptionService(subscriptionRepo, _bot);
+        var eventsRepo = new EventRepository(blCfg);
 
 
         _interestingPostsJob = new ForwardInterestingPostsFromEventsCommand(_bot, blCfg, service, subscriptions, loggerFactory);
         _markAsReadJob = new MarkSubscriptionsAsReadEventHandler(_tg, service, subscriptions, loggerFactory);
-        _unknownEventsHandler = new UnknownEventHandler(loggerFactory);
+        _unknownEventsHandler = new UnknownEventHandler(eventsRepo, loggerFactory);
 
 #if !DEBUG
         var wTelegramLogger = loggerFactory.CreateLogger("WTelegram");

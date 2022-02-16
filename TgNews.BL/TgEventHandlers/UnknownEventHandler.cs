@@ -1,16 +1,21 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using TgNews.BL.Client;
+using TgNews.BL.Repositories;
 
 namespace TgNews.BL.TgEventHandlers;
 
 public class UnknownEventHandler
 {
+    private readonly EventRepository _repo;
     private readonly ILogger _logger;
+    private int _unknownEventsSavedCounter = 0;
 
     public UnknownEventHandler(
+        EventRepository repo,
         ILoggerFactory loggerFactory)
     {
+        _repo = repo;
         _logger = loggerFactory.CreateLogger("UnknownEvents");
     }
 
@@ -18,10 +23,24 @@ public class UnknownEventHandler
     {
         tg.Events.OnUpdate += (update) =>
         {
+
             var updateType = update.GetType();
             var serializerOpts = new JsonSerializerSettings() { Formatting = Formatting.Indented };
             var updateJson = JsonConvert.SerializeObject(update, updateType, serializerOpts);
-            _logger.Log(LogLevel.Debug ,$"Got unknown update: {updateType.Name,25} Body: {Environment.NewLine}{updateJson}");
+            var record = new EventRepository.EventRecord()
+            {
+                Json = updateJson,
+                Received = DateTime.Now,
+                Type = updateType.Name,
+            };
+
+            _repo.Insert(record);
+
+            var unknownEventCount = Interlocked.Increment(ref _unknownEventsSavedCounter);
+            if (unknownEventCount % 25 == 0)
+            {
+                _logger.Log(LogLevel.Information ,$"Saved: {unknownEventCount,4} unknown events to DB during this session");
+            }
         };
     }
 }
