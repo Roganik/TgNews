@@ -26,7 +26,7 @@ public class Worker : BackgroundService
         var tgLogger = loggerFactory.CreateLogger<Telegram>();
         _tg = new Telegram(blCfg, tgLogger);
         var bot = new TelegramBot(blCfg);
-        var db = new KeyValueRepository(blCfg);
+        var db = new SubscriptionRepository(blCfg);
 
         var newPostsLogger = loggerFactory.CreateLogger("ForwardNewPosts");
         _job = new ForwardInterestingPostsFromEventsCommand(_tg, bot, db, blCfg, subscriptions, newPostsLogger);

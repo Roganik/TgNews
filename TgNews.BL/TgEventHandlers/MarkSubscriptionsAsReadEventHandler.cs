@@ -21,14 +21,14 @@ public class MarkSubscriptionsAsReadEventHandler
     public MarkSubscriptionsAsReadEventHandler(
         Client.Telegram tg,
         Client.TelegramBot bot,
-        KeyValueRepository db,
+        SubscriptionRepository repo,
         TgSubscriptionsProvider subscriptionsProvider,
         ILogger logger)
     {
         _tg = tg;
         _subscriptionsProvider = subscriptionsProvider;
         _logger = logger;
-        _subscriptionService = new SubscriptionService(db, bot);
+        _subscriptionService = new SubscriptionService(repo, bot);
     }
 
     public void Init()

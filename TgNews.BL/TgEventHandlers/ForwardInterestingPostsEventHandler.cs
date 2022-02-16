@@ -23,7 +23,7 @@ public class ForwardInterestingPostsFromEventsCommand
     public ForwardInterestingPostsFromEventsCommand(
         Client.Telegram tg,
         Client.TelegramBot bot,
-        KeyValueRepository db,
+        SubscriptionRepository repo,
         TgNewsConfiguration cfg,
         TgSubscriptionsProvider subscriptionsProvider,
         ILogger logger)
@@ -33,7 +33,7 @@ public class ForwardInterestingPostsFromEventsCommand
         _cfg = cfg;
         _subscriptionsProvider = subscriptionsProvider;
         _logger = logger;
-        _subscriptionService = new SubscriptionService(db, _bot);
+        _subscriptionService = new SubscriptionService(repo, _bot);
     }
 
     public async Task Init()
