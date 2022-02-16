@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using TgNews.BL.Client;
+using TgNews.BL.Repositories;
 using TgNews.BL.Services;
 using TgNews.BL.Subscriptions;
 using TL;
@@ -20,7 +21,7 @@ public class MarkSubscriptionsAsReadEventHandler
     public MarkSubscriptionsAsReadEventHandler(
         Client.Telegram tg,
         Client.TelegramBot bot,
-        Client.DbStorage db,
+        KeyValueRepository db,
         TgSubscriptionsProvider subscriptionsProvider,
         ILogger logger)
     {

@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using TgNews.BL.Client;
+using TgNews.BL.Repositories;
 using TgNews.BL.Services;
 using TgNews.BL.Subscriptions;
 using TL;
@@ -22,7 +23,7 @@ public class ForwardInterestingPostsFromEventsCommand
     public ForwardInterestingPostsFromEventsCommand(
         Client.Telegram tg,
         Client.TelegramBot bot,
-        Client.DbStorage db,
+        KeyValueRepository db,
         TgNewsConfiguration cfg,
         TgSubscriptionsProvider subscriptionsProvider,
         ILogger logger)

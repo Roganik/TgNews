@@ -1,15 +1,16 @@
 using TgNews.BL.Client;
+using TgNews.BL.Repositories;
 using TgNews.BL.Subscriptions;
 
 namespace TgNews.BL.Services;
 
 public class SubscriptionService
 {
-    private readonly DbStorage _db;
+    private readonly KeyValueRepository _db;
     private readonly TelegramBot _bot;
 
     public SubscriptionService(
-        DbStorage db,
+        KeyValueRepository db,
         TelegramBot bot
         )
     {

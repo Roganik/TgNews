@@ -1,6 +1,7 @@
 using TgNews.BL;
 using TgNews.BL.Client;
 using TgNews.BL.Commands;
+using TgNews.BL.Repositories;
 using TgNews.BL.TgEventHandlers;
 
 namespace TgNews.Worker;
@@ -25,7 +26,7 @@ public class Worker : BackgroundService
         var tgLogger = loggerFactory.CreateLogger<Telegram>();
         _tg = new Telegram(blCfg, tgLogger);
         var bot = new TelegramBot(blCfg);
-        var db = new DbStorage(blCfg);
+        var db = new KeyValueRepository(blCfg);
 
         var newPostsLogger = loggerFactory.CreateLogger("ForwardNewPosts");
         _job = new ForwardInterestingPostsFromEventsCommand(_tg, bot, db, blCfg, subscriptions, newPostsLogger);

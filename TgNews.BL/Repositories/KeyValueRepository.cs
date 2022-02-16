@@ -1,14 +1,14 @@
 using LiteDB;
 
-namespace TgNews.BL.Client;
+namespace TgNews.BL.Repositories;
 
 // https://github.com/mbdavid/LiteDB/wiki/Getting-Started
-public class DbStorage
+public class KeyValueRepository
 {
     private readonly string _dbFile;
     private readonly string _keyValueCollection;
 
-    public DbStorage(TgNewsConfiguration cfg)
+    public KeyValueRepository(TgNewsConfiguration cfg)
     {
         _dbFile = cfg.DbFile;
         _keyValueCollection = "Key_Value";
