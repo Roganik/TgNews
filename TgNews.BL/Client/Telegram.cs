@@ -7,13 +7,13 @@ public class Telegram : IDisposable
 {
     private readonly TgNewsConfiguration _cfg;
     private WTelegram.Client _telegram;
-    public TelegramEvents Events { get; }
+    public TelegramEvents.TelegramEvents Events { get; }
     public TelegramCache Cache { get; }
 
     public Telegram(TgNewsConfiguration cfg, ILogger<Telegram> logger)
     {
         _cfg = cfg;
-        this.Events = new TelegramEvents();
+        this.Events = new TelegramEvents.TelegramEvents();
         this.Cache = new TelegramCache();
         _telegram = CreateNewTelegramInstance();
 

@@ -15,7 +15,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Client\Events" />
       <Folder Include="Commands" />
     </ItemGroup>
 

@@ -1,7 +1,6 @@
-using Microsoft.Extensions.Logging;
 using TL;
 
-namespace TgNews.BL.Client;
+namespace TgNews.BL.Client.TelegramEvents;
 
 public class TelegramEvents
 {
