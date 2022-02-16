@@ -32,13 +32,13 @@ public class ForwardInterestingPostsFromEventsCommand
 
     public void Subscribe(Telegram tg)
     {
-        tg.Events.Channel.OnUpdateEditChannelMessage += (update, msg) =>
+        tg.Events.Channel.OnEditMessage += (update, msg) =>
         {
             var peerId = msg.peer_id.ID;
             _unprocessedMessages.Enqueue((peerId, msg));
         };
 
-        tg.Events.Channel.OnUpdateNewChannelMessage += (update, msg) =>
+        tg.Events.Channel.OnNewMessage += (update, msg) =>
         {
             var peerId = msg.peer_id.ID;
             _unprocessedMessages.Enqueue((peerId, msg));

@@ -13,31 +13,31 @@ public class TelegramChannelEvents
         switch (abstractUpdate)
         {
             case UpdateEditChannelMessage {message: Message msg} update:
-                OnUpdateEditChannelMessage?.Invoke(update, msg);
+                OnEditMessage?.Invoke(update, msg);
                 return true;
 
             case UpdateEditChannelMessage {message: MessageService msg} update:
-                OnUpdateEditChannelMessageService?.Invoke(update, msg);
+                OnEditMessageService?.Invoke(update, msg);
                 return true;
 
             case UpdateNewChannelMessage {message: Message msg} update:
-                OnUpdateNewChannelMessage?.Invoke(update, msg);
+                OnNewMessage?.Invoke(update, msg);
                 return true;
 
             case UpdateNewChannelMessage {message: MessageService msg} update:
-                OnUpdateNewChannelMessageService?.Invoke(update, msg);
+                OnNewMessageService?.Invoke(update, msg);
                 return true;
 
             case UpdateChannelUserTyping update:
-                OnUpdateChannelUserTyping?.Invoke(update);
+                OnaUserTyping?.Invoke(update);
                 return true;
 
             case UpdateChannelMessageViews update:
-                OnUpdateChannelMessageViews?.Invoke(update);
+                OnUpdateMessageViews?.Invoke(update);
                 return true;
 
             case UpdateDeleteChannelMessages update:
-                OnUpdateDeleteChannelMessages?.Invoke(update);
+                OnDeleteMessages?.Invoke(update);
                 return true;
 
             default:
@@ -46,12 +46,12 @@ public class TelegramChannelEvents
     }
 
 
-    public event Action<UpdateEditChannelMessage, Message>? OnUpdateEditChannelMessage;
-    public event Action<UpdateEditChannelMessage, MessageService>? OnUpdateEditChannelMessageService;
-    public event Action<UpdateNewChannelMessage, Message>? OnUpdateNewChannelMessage;
-    public event Action<UpdateNewChannelMessage, MessageService>? OnUpdateNewChannelMessageService;
-    public event Action<UpdateChannelUserTyping>? OnUpdateChannelUserTyping;
-    public event Action<UpdateChannelMessageViews>? OnUpdateChannelMessageViews;
-    public event Action<UpdateDeleteChannelMessages>? OnUpdateDeleteChannelMessages;
+    public event Action<UpdateEditChannelMessage, Message>? OnEditMessage;
+    public event Action<UpdateEditChannelMessage, MessageService>? OnEditMessageService;
+    public event Action<UpdateNewChannelMessage, Message>? OnNewMessage;
+    public event Action<UpdateNewChannelMessage, MessageService>? OnNewMessageService;
+    public event Action<UpdateChannelUserTyping>? OnaUserTyping;
+    public event Action<UpdateChannelMessageViews>? OnUpdateMessageViews;
+    public event Action<UpdateDeleteChannelMessages>? OnDeleteMessages;
 
 }
