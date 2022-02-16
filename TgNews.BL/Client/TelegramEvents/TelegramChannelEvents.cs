@@ -24,6 +24,10 @@ public class TelegramChannelEvents
                 OnUpdateNewChannelMessage?.Invoke(update, msg);
                 return true;
 
+            case UpdateNewChannelMessage {message: MessageService msg} update:
+                OnUpdateNewChannelMessageService?.Invoke(update, msg);
+                return true;
+
             case UpdateChannelUserTyping update:
                 OnUpdateChannelUserTyping?.Invoke(update);
                 return true;
@@ -45,6 +49,7 @@ public class TelegramChannelEvents
     public event Action<UpdateEditChannelMessage, Message>? OnUpdateEditChannelMessage;
     public event Action<UpdateEditChannelMessage, MessageService>? OnUpdateEditChannelMessageService;
     public event Action<UpdateNewChannelMessage, Message>? OnUpdateNewChannelMessage;
+    public event Action<UpdateNewChannelMessage, MessageService>? OnUpdateNewChannelMessageService;
     public event Action<UpdateChannelUserTyping>? OnUpdateChannelUserTyping;
     public event Action<UpdateChannelMessageViews>? OnUpdateChannelMessageViews;
     public event Action<UpdateDeleteChannelMessages>? OnUpdateDeleteChannelMessages;

@@ -37,6 +37,12 @@ public class ForwardInterestingPostsFromEventsCommand
             var peerId = msg.peer_id.ID;
             _unprocessedMessages.Enqueue((peerId, msg));
         };
+
+        tg.Events.Channel.OnUpdateNewChannelMessage += (update, msg) =>
+        {
+            var peerId = msg.peer_id.ID;
+            _unprocessedMessages.Enqueue((peerId, msg));
+        };
     }
 
     public async Task Execute()
