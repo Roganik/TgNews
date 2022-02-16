@@ -3,10 +3,9 @@ using Microsoft.Extensions.Logging;
 using TgNews.BL.Client;
 using TgNews.BL.Repositories;
 using TgNews.BL.Services;
-using TgNews.BL.Subscriptions;
 using TL;
 
-namespace TgNews.BL.Commands;
+namespace TgNews.BL.TgEventHandlers;
 
 public class ForwardInterestingPostsFromEventsCommand
 {
@@ -83,7 +82,7 @@ public class ForwardInterestingPostsFromEventsCommand
                 continue;
             }
 
-            var lastProcessedMsg = _subscriptionService.GetLastReadMsgId(subscription); // todo: read != forwarded. Need to store new variable
+            var lastProcessedMsg = _subscriptionService.GetLastForwardedMsgId(subscription);
             var messagesToAnalyze = newMessages.Where(p => p.PeerId == peer.PeerId && p.Msg.id > lastProcessedMsg).ToList();
             if (messagesToAnalyze.Count == 0)
             {
@@ -98,7 +97,7 @@ public class ForwardInterestingPostsFromEventsCommand
             
             var msgIdToForward = interestingMessages.Select(m => m.Msg.id).ToArray();
             await _bot.ForwardMessages(msgIdToForward, subscription.ChannelName, _cfg.TgBotForwardToChannel);
-            // todo: save last forwarded msg
+            _subscriptionService.SaveLastForwardedMsgId(subscription, msgIdToForward.Max());
 
             _logger.LogInformation($"Forwarded {interestingMessages.Count,2} interesting messages from {subscription.ChannelName}");
         }

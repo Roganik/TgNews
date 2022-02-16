@@ -31,6 +31,19 @@ public class SubscriptionService
         return entity.TgLastReadMsgId;
     }
 
+    public int GetLastForwardedMsgId(ITgSubscription subscription)
+    {
+        var entity = _db.Get(subscription.ChannelName);
+        return entity.TgLastForwardedMsgId;
+    }
+
+    public void SaveLastForwardedMsgId(ITgSubscription subscription, int lastForwardedMsgId)
+    {
+        var entity = _db.Get(subscription.ChannelName);
+        entity.TgLastForwardedMsgId = lastForwardedMsgId;
+        _db.Update(entity);
+    }
+
     public async Task<long> GetTelegramSubscriptionChannelId(ITgSubscription subscription)
     {
         var entity = _db.Get(subscription.ChannelName);
