@@ -18,12 +18,19 @@ public class EventRepository
     {
         public ObjectId? Id { get; set; }
         public DateTime Received { get; set; }
-        public string Type { get; set; }
-        public string Json { get; set; }
+        public string? Type { get; set; }
+        public string? Json { get; set; }
     }
 
-    public void Insert(EventRecord entity)
+    public void Insert(string eventType, DateTime eventDate, string eventJson)
     {
+        var entity = new EventRecord()
+        {
+            Json = eventJson,
+            Received = eventDate,
+            Type = eventType,
+        };
+
         using var db = new LiteDatabase(_dbFile);
         
         // Get a collection (or create, if doesn't exist)

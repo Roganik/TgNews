@@ -23,18 +23,11 @@ public class UnknownEventHandler
     {
         tg.Events.OnUpdate += (update) =>
         {
-
             var updateType = update.GetType();
             var serializerOpts = new JsonSerializerSettings() { Formatting = Formatting.Indented };
             var updateJson = JsonConvert.SerializeObject(update, updateType, serializerOpts);
-            var record = new EventRepository.EventRecord()
-            {
-                Json = updateJson,
-                Received = DateTime.Now,
-                Type = updateType.Name,
-            };
 
-            _repo.Insert(record);
+            _repo.Insert(updateType.Name, DateTime.Now, updateJson);
 
             var unknownEventCount = Interlocked.Increment(ref _unknownEventsSavedCounter);
             if (unknownEventCount % 25 == 0)

@@ -23,8 +23,6 @@ public class SubscriptionRepository
         public long TgChannelId { get; set; }
     }
 
-
-
     public SubscriptionRecord Get(string channelName)
     {
         using var db = new LiteDatabase(_dbFile);
