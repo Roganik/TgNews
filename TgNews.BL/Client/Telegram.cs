@@ -77,27 +77,16 @@ public class Telegram : IDisposable
 
     public async Task MarkChannelAsRead(string channelName, long channelId, int maxReadMsgId)
     {
-        var accessHash = _telegram.GetAccessHashFor<Channel>(channelId);
-        if (accessHash == default)
+        // todo: probably it's possible to implement some sort of caching here
+        // todo: try to use cached channel info instead of resolving username below
+        var resolved = await _telegram.Contacts_ResolveUsername(channelName);
+        if (resolved.UserOrChat is Channel channel)
         {
-            _logger.LogInformation($"Didn't found access hash for {channelName} (id: {channelId}) in cache, requesting it from tg manually");
-            var resolved = await _telegram.Contacts_ResolveUsername(channelName);
-            var channel = resolved.UserOrChat as Channel;
-            accessHash = channel?.access_hash ?? default;
+            await _telegram.Channels_ReadHistory(channel, maxReadMsgId);
+            return;
         }
 
-        if (accessHash == default)
-        {
-            throw new InvalidCastException("unable to resolve accessHash. Note: Only channel messages reading is implemented.");
-        }
-
-        var inputChannel = new InputChannel()
-        {
-            access_hash = accessHash,
-            channel_id = channelId,
-        };
-
-        await _telegram.Channels_ReadHistory(inputChannel, maxReadMsgId);
+        throw new InvalidCastException("Only channel messages reading is implemented");
     }
 
     public void Dispose()
