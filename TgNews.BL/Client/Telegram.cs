@@ -9,14 +9,12 @@ public class Telegram : IDisposable
     private readonly ILogger<Telegram> _logger;
     private WTelegram.Client _telegram;
     public TelegramEvents.TelegramEvents Events { get; }
-    public TelegramCache Cache { get; }
 
     public Telegram(TgNewsConfiguration cfg, ILogger<Telegram> logger)
     {
         _cfg = cfg;
         _logger = logger;
         this.Events = new TelegramEvents.TelegramEvents();
-        this.Cache = new TelegramCache();
         _telegram = CreateNewTelegramInstance();
 
         Events.OnReactorError += (re) =>
@@ -41,11 +39,11 @@ public class Telegram : IDisposable
     {
         var telegram = new WTelegram.Client(_cfg.TgConfig);
         telegram.Update += Events.Subscription;
-        telegram.Update += Cache.Subscription;
 
         if (!string.IsNullOrEmpty(_cfg.TgClientFloodAutoRetrySecondsThreshold) && int.TryParse(_cfg.TgClientFloodAutoRetrySecondsThreshold, out var seconds))
         {
             telegram.FloodRetryThreshold = seconds;
+            telegram.CollectAccessHash = true;
         }
 
         return telegram;
@@ -77,25 +75,29 @@ public class Telegram : IDisposable
         throw new InvalidCastException("Only channel messages getting is implemented");
     }
 
-    public async Task MarkChannelAsRead(string channelName, int maxReadMsgId)
+    public async Task MarkChannelAsRead(string channelName, long channelId, int maxReadMsgId)
     {
-        if (Cache.Channels.TryGetValue(channelName, out var channel))
+        var accessHash = _telegram.GetAccessHashFor<Channel>(channelId);
+        if (accessHash == default)
         {
-            _logger.LogInformation($"Was able to read {channelName} from cache.");
-        }
-        else
-        {
-            _logger.LogInformation($"Didn't found channel {channelName} in cache, resolving it manually");
+            _logger.LogInformation($"Didn't found access hash for {channelName} (id: {channelId}) in cache, requesting it from tg manually");
             var resolved = await _telegram.Contacts_ResolveUsername(channelName);
-            channel = resolved.UserOrChat as Channel;
+            var channel = resolved.UserOrChat as Channel;
+            accessHash = channel?.access_hash ?? default;
         }
 
-        if (channel == null)
+        if (accessHash == default)
         {
-            throw new InvalidCastException("Only channel messages reading is implemented");
+            throw new InvalidCastException("unable to resolve accessHash. Note: Only channel messages reading is implemented.");
         }
 
-        await _telegram.Channels_ReadHistory(channel, maxReadMsgId);
+        var inputChannel = new InputChannel()
+        {
+            access_hash = accessHash,
+            channel_id = channelId,
+        };
+
+        await _telegram.Channels_ReadHistory(inputChannel, maxReadMsgId);
     }
 
     public void Dispose()

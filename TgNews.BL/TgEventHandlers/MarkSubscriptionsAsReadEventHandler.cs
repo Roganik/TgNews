@@ -73,8 +73,10 @@ public class MarkSubscriptionsAsReadEventHandler
                 continue;
             }
 
-            _logger.LogInformation($"Marked {subscription.ChannelName, 17} as read. MaxMsgId: {maxMsgId}");
-            await _tg.MarkChannelAsRead(subscription.ChannelName, maxMsgId);
+            var channelId = await _subscriptionService.GetTelegramSubscriptionChannelId(subscription);
+
+            _logger.LogInformation($"Marking {subscription.ChannelName, 16} as read. MaxMsgId: {maxMsgId}");
+            await _tg.MarkChannelAsRead(subscription.ChannelName, channelId, maxMsgId);
             _subscriptionService.SaveLastReadMsgId(subscription, maxMsgId);
         }
     }
