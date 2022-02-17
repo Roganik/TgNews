@@ -6,6 +6,7 @@ namespace TgNews.BL.Client;
 public class Telegram : IDisposable
 {
     private readonly TgNewsConfiguration _cfg;
+    private readonly ILogger<Telegram> _logger;
     private WTelegram.Client _telegram;
     public TelegramEvents.TelegramEvents Events { get; }
     public TelegramCache Cache { get; }
@@ -13,6 +14,7 @@ public class Telegram : IDisposable
     public Telegram(TgNewsConfiguration cfg, ILogger<Telegram> logger)
     {
         _cfg = cfg;
+        _logger = logger;
         this.Events = new TelegramEvents.TelegramEvents();
         this.Cache = new TelegramCache();
         _telegram = CreateNewTelegramInstance();
@@ -77,16 +79,23 @@ public class Telegram : IDisposable
 
     public async Task MarkChannelAsRead(string channelName, int maxReadMsgId)
     {
-        // todo: probably it's possible to implement some sort of caching here
-        // todo: try to use cached channel info instead of resolving username below
-        var resolved = await _telegram.Contacts_ResolveUsername(channelName);
-        if (resolved.UserOrChat is Channel channel)
+        if (Cache.Channels.TryGetValue(channelName, out var channel))
         {
-            await _telegram.Channels_ReadHistory(channel, maxReadMsgId);
-            return;
+            _logger.LogInformation($"Was able to read {channelName} from cache.");
+        }
+        else
+        {
+            _logger.LogInformation($"Didn't found channel {channelName} in cache, resolving it manually");
+            var resolved = await _telegram.Contacts_ResolveUsername(channelName);
+            channel = resolved.UserOrChat as Channel;
         }
 
-        throw new InvalidCastException("Only channel messages reading is implemented");
+        if (channel == null)
+        {
+            throw new InvalidCastException("Only channel messages reading is implemented");
+        }
+
+        await _telegram.Channels_ReadHistory(channel, maxReadMsgId);
     }
 
     public void Dispose()

@@ -9,11 +9,14 @@ public class TelegramCache
 
     }
 
-    public IReadOnlyDictionary<long, ChatBase> Chats => _chats;
-    private Dictionary<long, ChatBase> _chats = new();
+    public IReadOnlyDictionary<long, ChatBase> ChatsBase => _chats;
+    private readonly Dictionary<long, ChatBase> _chats = new();
+
+    public IReadOnlyDictionary<string, Channel> Channels => _channels;
+    private readonly Dictionary<string, Channel> _channels = new();
     
     public IReadOnlyDictionary<long, UserBase> Users => _users;
-    private Dictionary<long, UserBase> _users = new();
+    private readonly Dictionary<long, UserBase> _users = new();
 
     internal void Subscription(IObject arg)
     {
@@ -26,7 +29,15 @@ public class TelegramCache
         {
             foreach (var kv in updates.Chats)
             {
-                _chats[kv.Key] = kv.Value;
+                switch (kv.Value)
+                {
+                    case Channel channel:
+                        _channels[channel.username] = channel;
+                        break;
+                    default:
+                        _chats[kv.Key] = kv.Value;
+                        break;
+                }
             }
         }
         

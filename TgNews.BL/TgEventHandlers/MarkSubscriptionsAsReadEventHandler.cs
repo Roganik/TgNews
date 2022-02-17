@@ -68,12 +68,12 @@ public class MarkSubscriptionsAsReadEventHandler
 
             var lastProcessedMsg = _subscriptionService.GetLastReadMsgId(subscription);
             var maxMsgId = newMessages.Where(p => p.PeerId == peerId).Select(m => m.Msg.id).Max();
-            if (maxMsgId == lastProcessedMsg)
+            if (lastProcessedMsg >= maxMsgId)
             {
                 continue;
             }
 
-            _logger.LogInformation($"Marked {subscription.ChannelName, 20} as read.");
+            _logger.LogInformation($"Marked {subscription.ChannelName, 17} as read. MaxMsgId: {maxMsgId}");
             await _tg.MarkChannelAsRead(subscription.ChannelName, maxMsgId);
             _subscriptionService.SaveLastReadMsgId(subscription, maxMsgId);
         }
