@@ -6,14 +6,12 @@ namespace TgNews.BL.Client;
 public class Telegram : IDisposable
 {
     private readonly TgNewsConfiguration _cfg;
-    private readonly ILogger<Telegram> _logger;
     private WTelegram.Client _telegram;
     public TelegramEvents.TelegramEvents Events { get; }
 
     public Telegram(TgNewsConfiguration cfg, ILogger<Telegram> logger)
     {
         _cfg = cfg;
-        _logger = logger;
         this.Events = new TelegramEvents.TelegramEvents();
         _telegram = CreateNewTelegramInstance();
 
@@ -75,18 +73,35 @@ public class Telegram : IDisposable
         throw new InvalidCastException("Only channel messages getting is implemented");
     }
 
-    public async Task MarkChannelAsRead(string channelName, long channelId, int maxReadMsgId)
+    public async Task MarkChannelAsRead(string channelName, int maxReadMsgId)
     {
-        // todo: probably it's possible to implement some sort of caching here
-        // todo: try to use cached channel info instead of resolving username below
-        var resolved = await _telegram.Contacts_ResolveUsername(channelName);
-        if (resolved.UserOrChat is Channel channel)
+        var inputPeerChannel = await GetInputPeerChannel(channelName);
+        await _telegram.Channels_ReadHistory(inputPeerChannel, maxReadMsgId);
+    }
+
+    private readonly Dictionary<string, InputPeerChannel> _channelToInputPeer = new();
+    private async Task<InputPeerChannel?> GetInputPeerChannel(string channelName)
+    {
+        if (_channelToInputPeer.TryGetValue(channelName, out var inputChannel))
         {
-            await _telegram.Channels_ReadHistory(channel, maxReadMsgId);
-            return;
+            return inputChannel;
         }
 
-        throw new InvalidCastException("Only channel messages reading is implemented");
+        var resolved = await _telegram.Contacts_ResolveUsername(channelName);
+        if (resolved.UserOrChat is not Channel channel)
+        {
+            throw new InvalidCastException("Only channel messages reading is implemented");
+        }
+
+        inputChannel = new InputPeerChannel
+        {
+            channel_id = channel.id,
+            access_hash = channel.access_hash,
+        };
+
+        _channelToInputPeer[channelName] = inputChannel;
+
+        return inputChannel;
     }
 
     public void Dispose()
