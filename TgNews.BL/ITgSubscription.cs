@@ -7,5 +7,7 @@ public interface ITgSubscription
     bool MarkAsReadAutomatically { get; }
 
     bool IsMessageInteresting(TL.Message message);
+
+    DefaultSubscriptionBehaviour DefaultSubscriptionBehaviour { get; }
     
 }

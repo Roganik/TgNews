@@ -15,6 +15,7 @@ public class Worker : BackgroundService
     private readonly Telegram _tg;
     private readonly MarkSubscriptionsAsReadEventHandler _markAsReadJob;
     private readonly TelegramBot _bot;
+    private readonly ChannelEventHandler _channelEventsHandler;
 
     public Worker(ILoggerFactory loggerFactory, IConfiguration icfg, SubscriptionsConfiguration subscriptionsCfg)
     {
@@ -31,12 +32,14 @@ public class Worker : BackgroundService
         var subscriptionRepo = new SubscriptionRepository(blCfg);
         var service = new SubscriptionService(subscriptionRepo, _bot);
         var eventsRepo = new EventRepository(blCfg);
+        var channelRepo = new ChannelMsgsRepository(blCfg);
 
         var subscriptions = new TgSubscriptionsProvider(subscriptionsCfg, service);
 
         _interestingPostsJob = new ForwardInterestingPostsFromEventsCommand(_bot, blCfg, service, subscriptions, loggerFactory);
         _markAsReadJob = new MarkSubscriptionsAsReadEventHandler(_tg, service, subscriptions, loggerFactory);
         _unknownEventsHandler = new UnknownEventHandler(eventsRepo, loggerFactory);
+        _channelEventsHandler = new ChannelEventHandler(channelRepo, subscriptions, loggerFactory);
 
 #if !DEBUG
         var wTelegramLogger = loggerFactory.CreateLogger("WTelegram");
@@ -53,6 +56,7 @@ public class Worker : BackgroundService
         _unknownEventsHandler.Subscribe(_tg);
         _markAsReadJob.Subscribe(_tg);
         _interestingPostsJob.Subscribe(_tg);
+        _channelEventsHandler.Subscribe(_tg);
 
         await _tg.Init();
         await base.StartAsync(cancellationToken);

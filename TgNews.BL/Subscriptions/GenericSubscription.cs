@@ -21,12 +21,17 @@ public class GenericSubscription : ITgSubscription
     public string ChannelName { get; }
     public bool MarkAsReadAutomatically { get; }
 
-    private DefaultSubscriptionBehaviour DefaultSubscriptionBehaviour { get; }
+    public DefaultSubscriptionBehaviour DefaultSubscriptionBehaviour { get; }
     private List<string> StopWords { get; }
     private List<string> InterestingWords { get; }
     
     public bool IsMessageInteresting(Message message)
     {
+        if (this.DefaultSubscriptionBehaviour == DefaultSubscriptionBehaviour.SaveMessage)
+        {
+            return false;
+        }
+
         var text = message.message;
         
         var hasStopWord = StopWords?.Any(word => text.Contains(word, StringComparison.InvariantCultureIgnoreCase));
@@ -54,4 +59,5 @@ public enum DefaultSubscriptionBehaviour
 {
     ForwardMessage,
     SkipMessage,
+    SaveMessage,
 }
